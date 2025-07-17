@@ -64,7 +64,6 @@
             height: 100%;
             pointer-events: none;
             z-index: 0;
-            /* atrás dos nós */
         }
 
         .node {
@@ -84,7 +83,6 @@
             box-sizing: border-box;
             color: #222;
             z-index: 1;
-            /* sobre as linhas */
             text-align: center;
             transition: box-shadow 0.2s ease;
         }
@@ -93,11 +91,9 @@
             box-shadow: 0 0 10px 4px #0078d7;
         }
 
-        /* ID fora do círculo, centralizado em cima */
         .number-tag {
             position: absolute;
             top: -36px;
-            /* acima do círculo */
             left: 50%;
             transform: translateX(-50%);
             width: 36px;
@@ -248,6 +244,21 @@
                 <img id="photo-preview" src="" alt="Prévia da foto"
                     style="display:none;max-width:100%;margin-top:8px;" />
 
+                <div id="photo-size-group" style="display:none; margin-top:10px;">
+                    <label for="photo-size-range">Tamanho da Foto (%)</label>
+                    <input type="range" id="photo-size-range" min="40" max="100" value="80" />
+                </div>
+                <div id="photo-hide-group" style="display:none; margin-top:10px;">
+                    <label>
+                        <input type="checkbox" id="photo-hide-checkbox" />
+                        Esconder conteúdo do nó (ID, título, texto)
+                    </label>
+                </div>
+                <div id="node-size-group" style="display:none; margin-top:10px;">
+                    <label for="node-size-input">Tamanho do Nó (px)</label>
+                    <input type="number" id="node-size-input" min="40" max="400" value="140" />
+                </div>
+
                 <button type="submit">Salvar</button>
                 <button type="button" id="duplicate-node-btn"
                     style="background:#0078d7; color:#fff; margin-left: 10px;">Duplicar Nó</button>
@@ -260,6 +271,21 @@
     </div>
 
     <script>
+        // Inicialize todos os elementos DOM antes de qualquer uso!
+        const graphArea = document.getElementById('graph-area');
+        const svg = document.getElementById('connections-svg');
+        const editPanel = document.getElementById('edit-panel');
+        const editForm = document.getElementById('edit-form');
+        const connectionsList = document.getElementById('edit-connections-list');
+        const photoInput = document.getElementById('edit-photo');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoSizeGroup = document.getElementById('photo-size-group');
+        const photoSizeRange = document.getElementById('photo-size-range');
+        const photoHideGroup = document.getElementById('photo-hide-group');
+        const photoHideCheckbox = document.getElementById('photo-hide-checkbox');
+        const nodeSizeGroup = document.getElementById('node-size-group');
+        const nodeSizeInput = document.getElementById('node-size-input');
+
         let graphData = {
             nodes: [
                 {
@@ -282,12 +308,6 @@
                 }
             ]
         };
-
-        const graphArea = document.getElementById('graph-area');
-        const svg = document.getElementById('connections-svg');
-        const editPanel = document.getElementById('edit-panel');
-        const editForm = document.getElementById('edit-form');
-        const connectionsList = document.getElementById('edit-connections-list');
         let selectedNode = null;
 
         document.getElementById('add-node-btn').addEventListener('click', () => {
@@ -328,13 +348,10 @@
             selectNode(newId);
         };
 
-        // Adicione esta função para deletar nó:
         document.getElementById('delete-node-btn').onclick = () => {
             if (!selectedNode) return;
             if (confirm(`Confirmar remoção do nó "${selectedNode.title}" (ID ${selectedNode.id})?`)) {
-                // Remove o nó do grafo
                 graphData.nodes = graphData.nodes.filter(n => n.id !== selectedNode.id);
-                // Remove conexões que apontam para esse nó
                 graphData.nodes.forEach(n => {
                     n.connections = n.connections.filter(c => c.targetId !== selectedNode.id);
                 });
@@ -352,25 +369,104 @@
         function createNodeElement(node) {
             const nodeEl = document.createElement('div');
             nodeEl.classList.add('node');
-            nodeEl.style.backgroundColor = node.color;
             nodeEl.style.left = node.x + 'px';
             nodeEl.style.top = node.y + 'px';
             nodeEl.dataset.id = node.id;
 
-            const numberTag = document.createElement('label');
-            numberTag.classList.add('number-tag');
-            numberTag.textContent = node.id;
-            nodeEl.appendChild(numberTag);
+            if (node.photo) {
+                nodeEl.innerHTML = '';
 
-            const titleEl = document.createElement('div');
-            titleEl.className = 'title';
-            titleEl.textContent = node.title;
-            nodeEl.appendChild(titleEl);
+                // Tamanho base do nó
+                const baseSize = node.nodeSize || 140;
+                nodeEl.style.width = baseSize + 'px';
+                nodeEl.style.height = baseSize + 'px';
+                nodeEl.style.border = '2px solid #444';
+                nodeEl.style.background = 'none';
+                nodeEl.style.backgroundColor = 'transparent';
+                nodeEl.style.overflow = 'hidden';
+                nodeEl.style.display = 'flex';
+                nodeEl.style.flexDirection = 'column';
+                nodeEl.style.alignItems = 'center';
+                nodeEl.style.justifyContent = 'flex-start';
+                nodeEl.style.borderRadius = '16px';
+                nodeEl.style.padding = '0';
 
-            const summary = document.createElement('div');
-            summary.className = 'summary';
-            summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
-            nodeEl.appendChild(summary);
+                // Conteúdo do nó (ID, título, texto) acima da imagem, se não estiver oculto
+                if (!node.hideContent) {
+                    const numberTag = document.createElement('label');
+                    numberTag.classList.add('number-tag');
+                    numberTag.textContent = node.id;
+                    numberTag.style.position = 'static';
+                    numberTag.style.transform = 'none';
+                    numberTag.style.margin = '8px auto 0 auto';
+                    numberTag.style.display = 'block';
+                    nodeEl.appendChild(numberTag);
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'title';
+                    titleEl.textContent = node.title;
+                    titleEl.style.margin = '4px 0 2px 0';
+                    nodeEl.appendChild(titleEl);
+
+                    const summary = document.createElement('div');
+                    summary.className = 'summary';
+                    summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
+                    summary.style.marginBottom = '4px';
+                    nodeEl.appendChild(summary);
+                }
+
+                // Imagem ocupa o restante do nó
+                const img = document.createElement('img');
+                img.src = node.photo;
+                img.alt = 'Foto do nó';
+                img.style.objectFit = 'cover';
+                img.style.width = (node.photoSize || 80) + '%';
+                img.style.height = (node.photoSize || 80) + '%';
+                img.style.margin = 'auto';
+                img.style.display = 'block';
+                img.style.flex = '1 1 auto';
+                img.style.borderRadius = '8px';
+
+                // Ajusta proporção do nó conforme a imagem
+                img.onload = function () {
+                    const aspect = img.naturalWidth / img.naturalHeight;
+                    let width = baseSize, height = baseSize;
+                    if (aspect > 1) {
+                        width = baseSize;
+                        height = Math.round(baseSize / aspect);
+                    } else {
+                        height = baseSize;
+                        width = Math.round(baseSize * aspect);
+                    }
+                    nodeEl.style.width = width + 'px';
+                    nodeEl.style.height = height + (node.hideContent ? 0 : 60) + 'px';
+                };
+                if (img.complete && img.naturalWidth) img.onload();
+
+                nodeEl.appendChild(img);
+            } else {
+                nodeEl.style.backgroundColor = node.color;
+                nodeEl.style.backgroundImage = '';
+                nodeEl.style.border = '';
+                nodeEl.style.borderRadius = '50%';
+                nodeEl.style.overflow = 'visible';
+                nodeEl.style.display = 'flex';
+
+                const numberTag = document.createElement('label');
+                numberTag.classList.add('number-tag');
+                numberTag.textContent = node.id;
+                nodeEl.appendChild(numberTag);
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'title';
+                titleEl.textContent = node.title;
+                nodeEl.appendChild(titleEl);
+
+                const summary = document.createElement('div');
+                summary.className = 'summary';
+                summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
+                nodeEl.appendChild(summary);
+            }
 
             nodeEl.addEventListener('click', e => {
                 e.stopPropagation();
@@ -402,23 +498,12 @@
                 drawConnections();
             });
 
-            if (node.photo) {
-                const img = document.createElement('img');
-                img.src = node.photo;
-                img.alt = 'Foto do nó';
-                img.style.maxWidth = '80px';
-                img.style.maxHeight = '80px';
-                img.style.margin = '6px 0';
-                nodeEl.appendChild(img);
-            }
-
             return nodeEl;
         }
 
         function drawConnections() {
             while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-            // Definição do marcador de seta
             const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
             const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
             marker.setAttribute("id", "arrow");
@@ -465,7 +550,6 @@
                     const endX = x2 - (dx / dist) * r;
                     const endY = y2 - (dy / dist) * r;
 
-                    // Linha
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                     line.setAttribute("x1", startX);
                     line.setAttribute("y1", startY);
@@ -477,7 +561,6 @@
                     line.setAttribute("marker-end", "url(#arrow)");
                     svg.appendChild(line);
 
-                    // Texto no meio da linha
                     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     const midX = (startX + endX) / 2;
                     const midY = (startY + endY) / 2;
@@ -522,13 +605,11 @@
             document.getElementById('edit-content').value = node.content;
             document.getElementById('edit-color').value = node.color || "#a2d5f2";
 
-            // Limpa conexões
             connectionsList.innerHTML = '';
 
             node.connections.forEach((conn, idx) => {
                 const div = document.createElement('div');
 
-                // Target ID
                 const targetInput = document.createElement('input');
                 targetInput.type = 'number';
                 targetInput.min = 1;
@@ -546,7 +627,6 @@
                 });
                 div.appendChild(targetInput);
 
-                // Label texto
                 const labelInput = document.createElement('input');
                 labelInput.type = 'text';
                 labelInput.placeholder = 'Texto da conexão';
@@ -557,7 +637,6 @@
                 });
                 div.appendChild(labelInput);
 
-                // Cor da linha
                 const colorInput = document.createElement('input');
                 colorInput.type = 'color';
                 colorInput.value = conn.color || '#444';
@@ -568,7 +647,6 @@
                 });
                 div.appendChild(colorInput);
 
-                // Botão remover conexão
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.textContent = 'X';
@@ -587,12 +665,28 @@
             if (node.photo) {
                 photoPreview.src = node.photo;
                 photoPreview.style.display = 'block';
+                photoSizeGroup.style.display = 'block';
+                photoSizeRange.value = node.photoSize || 80;
+                nodeSizeGroup.style.display = 'block';
+                nodeSizeInput.value = node.nodeSize || 140;
+                photoHideGroup.style.display = 'block';
+                photoHideCheckbox.checked = !!node.hideContent;
             } else {
                 photoPreview.src = '';
                 photoPreview.style.display = 'none';
+                photoSizeGroup.style.display = 'none';
+                nodeSizeGroup.style.display = 'none';
+                photoHideGroup.style.display = 'none';
             }
             photoInput.value = '';
         }
+
+        photoHideCheckbox.addEventListener('change', function () {
+            if (selectedNode && selectedNode.photo) {
+                selectedNode.hideContent = this.checked;
+                renderGraph();
+            }
+        });
 
         function hideEditPanel() {
             selectedNode = null;
@@ -614,7 +708,6 @@
                 return;
             }
 
-            // Atualiza conexões: valida IDs e atualiza para números válidos
             for (const conn of selectedNode.connections) {
                 if (typeof conn.targetId !== 'number' || conn.targetId < 1 || !graphData.nodes.some(n => n.id === conn.targetId)) {
                     alert('Alguma conexão possui ID alvo inválido.');
@@ -628,7 +721,6 @@
             selectedNode.content = document.getElementById('edit-content').value.trim();
             selectedNode.color = document.getElementById('edit-color').value;
 
-            // Atualiza conexões que referenciam o antigo id
             if (oldId !== newId) {
                 graphData.nodes.forEach(n => {
                     n.connections.forEach(c => {
@@ -645,18 +737,15 @@
             hideEditPanel();
         });
 
-        // Desselecionar ao clicar fora
         graphArea.addEventListener('click', () => {
             hideEditPanel();
         });
 
-        // Salvar arquivo JSON
         document.getElementById('save-btn').addEventListener('click', () => {
             const dataStr = JSON.stringify(graphData, null, 2);
             download('graph.json', dataStr);
         });
 
-        // Salvar Como
         document.getElementById('save-as-btn').addEventListener('click', () => {
             let filename = prompt('Digite o nome do arquivo (sem extensão)', 'graph');
             if (!filename) return;
@@ -675,7 +764,6 @@
             document.body.removeChild(element);
         }
 
-        // Carregar JSON do arquivo
         document.getElementById('load-btn').addEventListener('click', () => {
             document.getElementById('load-input').click();
         });
@@ -705,9 +793,7 @@
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Delete' && selectedNode) {
                 if (confirm(`Confirmar remoção do nó "${selectedNode.title}" (ID ${selectedNode.id})?`)) {
-                    // Remove o nó do grafo
                     graphData.nodes = graphData.nodes.filter(n => n.id !== selectedNode.id);
-                    // Remove conexões que apontam para esse nó
                     graphData.nodes.forEach(n => {
                         n.connections = n.connections.filter(c => c.targetId !== selectedNode.id);
                     });
@@ -717,11 +803,8 @@
             }
         });
 
-        // Inicializa
-        // Inicializa;
         renderGraph();
-        const photoInput = document.getElementById('edit-photo');
-        const photoPreview = document.getElementById('photo-preview');
+
         photoInput.addEventListener('change', function () {
             const file = this.files[0];
             if (!file) return;
@@ -729,12 +812,36 @@
             reader.onload = function (e) {
                 if (selectedNode) {
                     selectedNode.photo = e.target.result;
+                    if (!selectedNode.photoSize) selectedNode.photoSize = 80;
+                    if (!selectedNode.nodeSize) selectedNode.nodeSize = 140;
                     photoPreview.src = e.target.result;
                     photoPreview.style.display = 'block';
+                    photoSizeGroup.style.display = 'block';
+                    photoSizeRange.value = selectedNode.photoSize;
+                    nodeSizeGroup.style.display = 'block';
+                    nodeSizeInput.value = selectedNode.nodeSize;
                     renderGraph();
                 }
             };
             reader.readAsDataURL(file);
+        });
+
+        photoSizeRange.addEventListener('input', function () {
+            if (selectedNode && selectedNode.photo) {
+                selectedNode.photoSize = parseInt(this.value);
+                renderGraph();
+            }
+        });
+
+        nodeSizeInput.addEventListener('input', function () {
+            if (selectedNode && selectedNode.photo) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 40) val = 40;
+                if (val > 400) val = 400;
+                selectedNode.nodeSize = val;
+                this.value = val;
+                renderGraph();
+            }
         });
     </script>
 
