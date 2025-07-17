@@ -501,6 +501,13 @@
             return nodeEl;
         }
 
+        function applyTransform() {
+            // Aplica zoom e pan em tudo, inclusive nas linhas
+            graphArea.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+            svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+            drawConnections();
+        }
+
         function drawConnections() {
             while (svg.firstChild) svg.removeChild(svg.firstChild);
 
@@ -520,52 +527,39 @@
             defs.appendChild(marker);
             svg.appendChild(defs);
 
-            const r = 70;
-
             graphData.nodes.forEach(n => {
-                const fromEl = graphArea.querySelector(`.node[data-id='${n.id}']`);
-                if (!fromEl) return;
-                const fromRect = fromEl.getBoundingClientRect();
-                const graphRect = graphArea.getBoundingClientRect();
+                const fromX = n.x + 70;
+                const fromY = n.y + 70;
 
                 n.connections.forEach(conn => {
                     const toNode = graphData.nodes.find(nd => nd.id === conn.targetId);
                     if (!toNode) return;
-                    const toEl = graphArea.querySelector(`.node[data-id='${toNode.id}']`);
-                    if (!toEl) return;
-                    const toRect = toEl.getBoundingClientRect();
 
-                    const x1 = fromRect.left + fromRect.width / 2 - graphRect.left;
-                    const y1 = fromRect.top + fromRect.height / 2 - graphRect.top;
-                    const x2 = toRect.left + toRect.width / 2 - graphRect.left;
-                    const y2 = toRect.top + toRect.height / 2 - graphRect.top;
-
-                    const dx = x2 - x1;
-                    const dy = y2 - y1;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist === 0) return;
-
-                    const startX = x1 + (dx / dist) * r;
-                    const startY = y1 + (dy / dist) * r;
-                    const endX = x2 - (dx / dist) * r;
-                    const endY = y2 - (dy / dist) * r;
+                    const toX = toNode.x + 70;
+                    const toY = toNode.y + 70;
 
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", startX);
-                    line.setAttribute("y1", startY);
-                    line.setAttribute("x2", endX);
-                    line.setAttribute("y2", endY);
+                    line.setAttribute("x1", fromX);
+                    line.setAttribute("y1", fromY);
+                    line.setAttribute("x2", toX);
+                    line.setAttribute("y2", toY);
                     line.setAttribute("stroke", conn.color || "#444");
                     line.setAttribute("stroke-width", "3");
                     line.setAttribute("stroke-linecap", "round");
-                    line.setAttribute("marker-end", "url(#arrow)");
                     svg.appendChild(line);
 
+                    const arrowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    arrowLine.setAttribute("x1", fromX);
+                    arrowLine.setAttribute("y1", fromY);
+                    arrowLine.setAttribute("x2", toX);
+                    arrowLine.setAttribute("y2", toY);
+                    arrowLine.setAttribute("stroke", "none");
+                    arrowLine.setAttribute("marker-end", "url(#arrow)");
+                    svg.appendChild(arrowLine);
+
                     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    const midX = (startX + endX) / 2;
-                    const midY = (startY + endY) / 2;
-                    text.setAttribute("x", midX);
-                    text.setAttribute("y", midY - 10);
+                    text.setAttribute("x", (fromX + toX) / 2);
+                    text.setAttribute("y", (fromY + toY) / 2 - 10);
                     text.setAttribute("fill", conn.color || "#444");
                     text.setAttribute("font-size", "14");
                     text.setAttribute("font-family", "Arial, sans-serif");
@@ -575,6 +569,8 @@
                 });
             });
         }
+
+
 
         function renderGraph() {
             graphArea.innerHTML = '';
@@ -754,9 +750,16 @@
             download(filename, dataStr);
         });
 
+        // download com zoom e pan
         function download(filename, text) {
+            const data = {
+                ...JSON.parse(text),
+                __zoom: zoom,
+                __translateX: translateX,
+                __translateY: translateY
+            };
             const element = document.createElement('a');
-            element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2)));
             element.setAttribute('download', filename);
             element.style.display = 'none';
             document.body.appendChild(element);
@@ -777,6 +780,10 @@
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.nodes && Array.isArray(loadedData.nodes)) {
                         graphData = loadedData;
+                        zoom = loadedData.__zoom || 1;
+                        translateX = loadedData.__translateX || 0;
+                        translateY = loadedData.__translateY || 0;
+                        applyTransform();
                         hideEditPanel();
                         renderGraph();
                     } else {
@@ -790,18 +797,62 @@
             e.target.value = '';
         });
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete' && selectedNode) {
-                if (confirm(`Confirmar remoção do nó "${selectedNode.title}" (ID ${selectedNode.id})?`)) {
-                    graphData.nodes = graphData.nodes.filter(n => n.id !== selectedNode.id);
-                    graphData.nodes.forEach(n => {
-                        n.connections = n.connections.filter(c => c.targetId !== selectedNode.id);
-                    });
-                    hideEditPanel();
-                    renderGraph();
-                }
+        // Zoom e pan
+        let zoom = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+
+        // Aplica transformações de zoom e pan
+        function applyTransform() {
+            // Aplica zoom e pan em tudo, inclusive nas linhas
+            graphArea.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+            svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+            drawConnections();
+        }
+
+        // Mouse wheel para zoom
+        graphArea.addEventListener('wheel', function (e) {
+            if (e.ctrlKey) return; // deixa zoom do navegador funcionar normalmente
+            e.preventDefault();
+            const scaleAmount = 0.1;
+            const oldZoom = zoom;
+            if (e.deltaY < 0) {
+                zoom = Math.min(zoom + scaleAmount, 3);
+            } else {
+                zoom = Math.max(zoom - scaleAmount, 0.2);
             }
+            // Zoom centralizado no mouse
+            const rect = graphArea.getBoundingClientRect();
+            const mx = (e.clientX - rect.left - translateX) / oldZoom;
+            const my = (e.clientY - rect.top - translateY) / oldZoom;
+            translateX -= (zoom - oldZoom) * mx;
+            translateY -= (zoom - oldZoom) * my;
+            applyTransform();
+        }, { passive: false });
+
+        // Pan com mouse drag no fundo
+        graphArea.addEventListener('mousedown', function (e) {
+            if (e.target !== graphArea) return;
+            isPanning = true;
+            panStart.x = e.clientX - translateX;
+            panStart.y = e.clientY - translateY;
+            graphArea.style.cursor = 'move';
         });
+        window.addEventListener('mousemove', function (e) {
+            if (!isPanning) return;
+            translateX = e.clientX - panStart.x;
+            translateY = e.clientY - panStart.y;
+            applyTransform();
+        });
+        window.addEventListener('mouseup', function () {
+            isPanning = false;
+            graphArea.style.cursor = '';
+        });
+
+        // Ao iniciar, aplica transformações
+        applyTransform();
 
         renderGraph();
 
