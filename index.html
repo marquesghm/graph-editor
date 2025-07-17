@@ -204,6 +204,11 @@
         #edit-connections-list button.remove-conn-btn:hover {
             background: #c9302c;
         }
+
+        #arrow-settings-group {
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
@@ -258,6 +263,12 @@
                     <label for="node-size-input">Tamanho do Nó (px)</label>
                     <input type="number" id="node-size-input" min="40" max="400" value="140" />
                 </div>
+                <div id="arrow-settings-group" style="display:none; margin-top:10px;">
+                    <label for="arrow-size-input">Tamanho da Seta</label>
+                    <input type="number" id="arrow-size-input" min="5" max="40" value="10" />
+                    <label for="arrow-color-input" style="margin-top:6px;">Cor da Seta</label>
+                    <input type="color" id="arrow-color-input" value="#444444" />
+                </div>
 
                 <button type="submit">Salvar</button>
                 <button type="button" id="duplicate-node-btn"
@@ -285,6 +296,9 @@
         const photoHideCheckbox = document.getElementById('photo-hide-checkbox');
         const nodeSizeGroup = document.getElementById('node-size-group');
         const nodeSizeInput = document.getElementById('node-size-input');
+        const arrowSettingsGroup = document.getElementById('arrow-settings-group');
+        const arrowSizeInput = document.getElementById('arrow-size-input');
+        const arrowColorInput = document.getElementById('arrow-color-input');
 
         let graphData = {
             nodes: [
@@ -517,39 +531,56 @@
         function drawConnections() {
             while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-            const offsetX = getOffsetX(); // <- aqui
-
-            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-            const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
-            marker.setAttribute("id", "arrow");
-            marker.setAttribute("markerWidth", "10");
-            marker.setAttribute("markerHeight", "10");
-            marker.setAttribute("refX", "8");
-            marker.setAttribute("refY", "5");
-            marker.setAttribute("orient", "auto");
-            marker.setAttribute("markerUnits", "strokeWidth");
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("d", "M0,0 L10,5 L0,10 z");
-            path.setAttribute("fill", "#444");
-            marker.appendChild(path);
-            defs.appendChild(marker);
-            svg.appendChild(defs);
+            const offsetX = getOffsetX();
 
             graphData.nodes.forEach(n => {
-                const fromX = n.x + 70; // centro do nó
-                const fromY = n.y + 70;
+                const fromNode = n;
+                const fromX = fromNode.x + (fromNode.nodeSize || 140) / 2;
+                const fromY = fromNode.y + (fromNode.nodeSize || 140) / 2;
 
                 n.connections.forEach(conn => {
                     const toNode = graphData.nodes.find(nd => nd.id === conn.targetId);
                     if (!toNode) return;
 
-                    const toX = toNode.x + 70;
-                    const toY = toNode.y + 70;
+                    const toX = toNode.x + (toNode.nodeSize || 140) / 2;
+                    const toY = toNode.y + (toNode.nodeSize || 140) / 2;
 
                     // Aplique o offsetX nas posições X
                     const adjFromX = fromX - offsetX;
                     const adjToX = toX - offsetX;
 
+                    // Calcula direção
+                    const dx = adjToX - adjFromX;
+                    const dy = toY - fromY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    // Calcula ponto na borda do nó de destino
+                    let edgeX = adjToX;
+                    let edgeY = toY;
+                    if (dist > 0) {
+                        if (toNode.photo) {
+                            // Retângulo
+                            const w = toNode.nodeSize || 140;
+                            const h = toNode.nodeSize || 140;
+                            const tx = -dx / dist;
+                            const ty = -dy / dist;
+                            const rectHalfW = w / 2;
+                            const rectHalfH = h / 2;
+                            const scale = 1 / Math.max(
+                                Math.abs(tx) / rectHalfW,
+                                Math.abs(ty) / rectHalfH
+                            );
+                            edgeX = adjToX + tx * rectHalfW * scale;
+                            edgeY = toY + ty * rectHalfH * scale;
+                        } else {
+                            // Círculo
+                            const r = (toNode.nodeSize || 140) / 2;
+                            edgeX = adjToX + (-dx / dist) * r;
+                            edgeY = toY + (-dy / dist) * r;
+                        }
+                    }
+
+                    // Linha do centro ao centro, mas desenhada abaixo dos nós (z-index via ordem de append)
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                     line.setAttribute("x1", adjFromX);
                     line.setAttribute("y1", fromY);
@@ -560,15 +591,40 @@
                     line.setAttribute("stroke-linecap", "round");
                     svg.appendChild(line);
 
+                    // Seta até a borda do nó de destino
+                    // Usa tamanho e cor customizados se definidos no nó origem
+                    const arrowSize = n.arrowSize || 10;
+                    const arrowColor = n.arrowColor || '#444444';
+
+                    // Cria marker customizado para cada cor/tamanho se necessário
+                    const markerId = `arrow-${arrowSize}-${arrowColor.replace('#', '')}`;
+                    if (!svg.querySelector(`#${markerId}`)) {
+                        const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS("http://www.w3.org/2000/svg", "defs"), svg.firstChild);
+                        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+                        marker.setAttribute("id", markerId);
+                        marker.setAttribute("markerWidth", arrowSize);
+                        marker.setAttribute("markerHeight", arrowSize);
+                        marker.setAttribute("refX", arrowSize * 0.8);
+                        marker.setAttribute("refY", arrowSize / 2);
+                        marker.setAttribute("orient", "auto");
+                        marker.setAttribute("markerUnits", "strokeWidth");
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        path.setAttribute("d", `M0,0 L${arrowSize},${arrowSize / 2} L0,${arrowSize} z`);
+                        path.setAttribute("fill", arrowColor);
+                        marker.appendChild(path);
+                        defs.appendChild(marker);
+                    }
+
                     const arrowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                     arrowLine.setAttribute("x1", adjFromX);
                     arrowLine.setAttribute("y1", fromY);
-                    arrowLine.setAttribute("x2", adjToX);
-                    arrowLine.setAttribute("y2", toY);
+                    arrowLine.setAttribute("x2", edgeX);
+                    arrowLine.setAttribute("y2", edgeY);
                     arrowLine.setAttribute("stroke", "none");
-                    arrowLine.setAttribute("marker-end", "url(#arrow)");
+                    arrowLine.setAttribute("marker-end", `url(#${markerId})`);
                     svg.appendChild(arrowLine);
 
+                    // Label
                     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     text.setAttribute("x", (adjFromX + adjToX) / 2);
                     text.setAttribute("y", (fromY + toY) / 2 - 10);
@@ -689,12 +745,39 @@
                 photoHideGroup.style.display = 'none';
             }
             photoInput.value = '';
+
+            // Exibe controles de seta se houver conexões
+            if (node.connections && node.connections.length > 0) {
+                arrowSettingsGroup.style.display = 'block';
+                // Usa valores do nó ou padrão
+                arrowSizeInput.value = node.arrowSize || 10;
+                arrowColorInput.value = node.arrowColor || '#444444';
+            } else {
+                arrowSettingsGroup.style.display = 'none';
+            }
+
             setTimeout(drawConnections, 0);
         }
 
         photoHideCheckbox.addEventListener('change', function () {
             if (selectedNode && selectedNode.photo) {
                 selectedNode.hideContent = this.checked;
+                renderGraph();
+            }
+        });
+
+        // Atualiza tamanho da seta
+        arrowSizeInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.arrowSize = parseInt(this.value);
+                renderGraph();
+            }
+        });
+
+        // Atualiza cor da seta
+        arrowColorInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.arrowColor = this.value;
                 renderGraph();
             }
         });
