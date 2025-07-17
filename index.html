@@ -98,8 +98,6 @@
             top: -36px;
             left: 50%;
             transform: translateX(-50%);
-            width: 36px;
-            height: 36px;
             border-radius: 50%;
             border: 2px solid #444;
             background: white;
@@ -211,6 +209,32 @@
             display: none;
             margin-top: 10px;
         }
+
+        .toggle-group {
+            margin-top: 10px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: #f9f9f9;
+            padding: 0;
+        }
+
+        .toggle-header {
+            cursor: pointer;
+            padding: 8px 10px;
+            font-weight: bold;
+            background: #f1f1f1;
+            border-bottom: 1px solid #eee;
+            user-select: none;
+        }
+
+        .toggle-content {
+            display: none;
+            padding: 10px;
+        }
+
+        .toggle-group.open .toggle-content {
+            display: block;
+        }
     </style>
 </head>
 
@@ -272,6 +296,55 @@
                     <input type="color" id="arrow-color-input" value="#444444" />
                 </div>
 
+                <div class="toggle-group" id="toggle-node-geometry">
+                    <div class="toggle-header">Geometria do Nó</div>
+                    <div class="toggle-content">
+                        <label for="node-x-input">Posição X</label>
+                        <input type="number" id="node-x-input" min="0" step="1" />
+                        <label for="node-y-input" style="margin-top:6px;">Posição Y</label>
+                        <input type="number" id="node-y-input" min="0" step="1" />
+                        <label for="node-width-input" style="margin-top:6px;">Largura do Nó (px)</label>
+                        <input type="number" id="node-width-input" min="40" max="800" step="1" />
+                        <label for="node-height-input" style="margin-top:6px;">Altura do Nó (px)</label>
+                        <input type="number" id="node-height-input" min="40" max="800" step="1" />
+                    </div>
+                </div>
+
+                <div class="toggle-group" id="toggle-element-geometry">
+                    <div class="toggle-header">Geometria Tag, Título e Texto</div>
+                    <div class="toggle-content">
+                        <strong>Tag</strong>
+                        <label for="tag-x-input">Tag X</label>
+                        <input type="number" id="tag-x-input" min="0" step="1" />
+                        <label for="tag-y-input" style="margin-top:6px;">Tag Y</label>
+                        <input type="number" id="tag-y-input" min="0" step="1" />
+                        <label for="tag-width-input" style="margin-top:6px;">Tag Largura (px)</label>
+                        <input type="number" id="tag-width-input" min="10" max="200" step="1" />
+                        <label for="tag-height-input" style="margin-top:6px;">Tag Altura (px)</label>
+                        <input type="number" id="tag-height-input" min="10" max="200" step="1" />
+
+                        <strong style="margin-top:10px;display:block;">Título</strong>
+                        <label for="title-x-input">Título X</label>
+                        <input type="number" id="title-x-input" min="0" step="1" />
+                        <label for="title-y-input" style="margin-top:6px;">Título Y</label>
+                        <input type="number" id="title-y-input" min="0" step="1" />
+                        <label for="title-width-input" style="margin-top:6px;">Título Largura (px)</label>
+                        <input type="number" id="title-width-input" min="10" max="300" step="1" />
+                        <label for="title-height-input" style="margin-top:6px;">Título Altura (px)</label>
+                        <input type="number" id="title-height-input" min="10" max="100" step="1" />
+
+                        <strong style="margin-top:10px;display:block;">Texto</strong>
+                        <label for="text-x-input">Texto X</label>
+                        <input type="number" id="text-x-input" min="0" step="1" />
+                        <label for="text-y-input" style="margin-top:6px;">Texto Y</label>
+                        <input type="number" id="text-y-input" min="0" step="1" />
+                        <label for="text-width-input" style="margin-top:6px;">Texto Largura (px)</label>
+                        <input type="number" id="text-width-input" min="10" max="300" step="1" />
+                        <label for="text-height-input" style="margin-top:6px;">Texto Altura (px)</label>
+                        <input type="number" id="text-height-input" min="10" max="200" step="1" />
+                    </div>
+                </div>
+
                 <button type="submit">Salvar</button>
                 <button type="button" id="duplicate-node-btn"
                     style="background:#0078d7; color:#fff; margin-left: 10px;">Duplicar Nó</button>
@@ -301,6 +374,24 @@
         const arrowSettingsGroup = document.getElementById('arrow-settings-group');
         const arrowSizeInput = document.getElementById('arrow-size-input');
         const arrowColorInput = document.getElementById('arrow-color-input');
+        const nodeGeometryGroup = document.getElementById('node-geometry-group');
+        const nodeXInput = document.getElementById('node-x-input');
+        const nodeYInput = document.getElementById('node-y-input');
+        const nodeWidthInput = document.getElementById('node-width-input');
+        const nodeHeightInput = document.getElementById('node-height-input');
+        const elementGeometryGroup = document.getElementById('element-geometry-group');
+        const tagXInput = document.getElementById('tag-x-input');
+        const tagYInput = document.getElementById('tag-y-input');
+        const tagWidthInput = document.getElementById('tag-width-input');
+        const tagHeightInput = document.getElementById('tag-height-input');
+        const titleXInput = document.getElementById('title-x-input');
+        const titleYInput = document.getElementById('title-y-input');
+        const titleWidthInput = document.getElementById('title-width-input');
+        const titleHeightInput = document.getElementById('title-height-input');
+        const textXInput = document.getElementById('text-x-input');
+        const textYInput = document.getElementById('text-y-input');
+        const textWidthInput = document.getElementById('text-width-input');
+        const textHeightInput = document.getElementById('text-height-input');
 
         let graphData = {
             nodes: [
@@ -389,6 +480,12 @@
             nodeEl.style.top = node.y + 'px';
             nodeEl.dataset.id = node.id;
 
+            // Use nodeWidth/nodeHeight se definidos, senão nodeSize
+            const width = node.nodeWidth || node.nodeSize || 140;
+            const height = node.nodeHeight || node.nodeSize || 140;
+            nodeEl.style.width = width + 'px';
+            nodeEl.style.height = height + 'px';
+
             if (node.photo) {
                 nodeEl.innerHTML = '';
 
@@ -407,29 +504,58 @@
                 nodeEl.style.borderRadius = '16px';
                 nodeEl.style.padding = '0';
 
-                // Conteúdo do nó (ID, título, texto) acima da imagem, se não estiver oculto
-                if (!node.hideContent) {
-                    const numberTag = document.createElement('label');
-                    numberTag.classList.add('number-tag');
-                    numberTag.textContent = node.id;
-                    numberTag.style.position = 'static';
-                    numberTag.style.transform = 'none';
-                    numberTag.style.margin = '8px auto 0 auto';
-                    numberTag.style.display = 'block';
-                    nodeEl.appendChild(numberTag);
+                // TAG (ID)
+                const numberTag = document.createElement('label');
+                numberTag.classList.add('number-tag');
+                numberTag.textContent = node.id;
+                // Atualiza CSS conforme painel lateral
+                numberTag.style.position = 'absolute';
+                numberTag.style.left = (node.tagX || 0) + 'px';
+                numberTag.style.top = (node.tagY || 0) + 'px';
+                numberTag.style.width = (node.tagWidth || 36) + 'px';
+                numberTag.style.height = (node.tagHeight || 36) + 'px';
+                // Remove alinhamento central padrão do CSS global
+                numberTag.style.transform = 'none';
+                numberTag.style.margin = '0';
+                numberTag.style.lineHeight = numberTag.style.height;
+                numberTag.style.textAlign = 'center';
+                nodeEl.appendChild(numberTag);
 
-                    const titleEl = document.createElement('div');
-                    titleEl.className = 'title';
-                    titleEl.textContent = node.title;
-                    titleEl.style.margin = '4px 0 2px 0';
-                    nodeEl.appendChild(titleEl);
+                // TÍTULO
+                const titleEl = document.createElement('div');
+                titleEl.className = 'title';
+                titleEl.textContent = node.title;
+                // Atualiza CSS conforme painel lateral
+                titleEl.style.position = 'absolute';
+                titleEl.style.left = (node.titleX || 0) + 'px';
+                titleEl.style.top = (node.titleY || 0) + 'px';
+                titleEl.style.width = (node.titleWidth || 120) + 'px';
+                titleEl.style.height = (node.titleHeight || 24) + 'px';
+                titleEl.style.margin = '0';
+                titleEl.style.wordWrap = 'break-word';
+                titleEl.style.fontWeight = 'bold';
+                titleEl.style.fontSize = '1.1rem';
+                nodeEl.appendChild(titleEl);
 
-                    const summary = document.createElement('div');
-                    summary.className = 'summary';
-                    summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
-                    summary.style.marginBottom = '4px';
-                    nodeEl.appendChild(summary);
-                }
+                // TEXTO
+                const summary = document.createElement('div');
+                summary.className = 'summary';
+                summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
+                // Atualiza CSS conforme painel lateral
+                summary.style.position = 'absolute';
+                summary.style.left = (node.textX || 0) + 'px';
+                summary.style.top = (node.textY || 0) + 'px';
+                summary.style.width = (node.textWidth || 120) + 'px';
+                summary.style.height = (node.textHeight || 60) + 'px';
+                summary.style.margin = '0';
+                summary.style.fontSize = '0.9rem';
+                summary.style.color = '#444';
+                summary.style.overflow = 'hidden';
+                summary.style.textOverflow = 'ellipsis';
+                summary.style.display = '-webkit-box';
+                summary.style.webkitLineClamp = '4';
+                summary.style.webkitBoxOrient = 'vertical';
+                nodeEl.appendChild(summary);
 
                 // Imagem ocupa o restante do nó
                 const img = document.createElement('img');
@@ -468,9 +594,21 @@
                 nodeEl.style.overflow = 'visible';
                 nodeEl.style.display = 'flex';
 
+                // TAG (ID)
                 const numberTag = document.createElement('label');
                 numberTag.classList.add('number-tag');
                 numberTag.textContent = node.id;
+                // Atualiza CSS conforme painel lateral
+                numberTag.style.position = 'absolute';
+                numberTag.style.left = (node.tagX || 0) + 'px';
+                numberTag.style.top = (node.tagY || 0) + 'px';
+                numberTag.style.width = (node.tagWidth || 36) + 'px';
+                numberTag.style.height = (node.tagHeight || 36) + 'px';
+                // Remove alinhamento central padrão do CSS global
+                numberTag.style.transform = 'none';
+                numberTag.style.margin = '0';
+                numberTag.style.lineHeight = numberTag.style.height;
+                numberTag.style.textAlign = 'center';
                 nodeEl.appendChild(numberTag);
 
                 const titleEl = document.createElement('div');
@@ -478,6 +616,7 @@
                 titleEl.textContent = node.title;
                 nodeEl.appendChild(titleEl);
 
+                // TEXTO
                 const summary = document.createElement('div');
                 summary.className = 'summary';
                 summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
@@ -670,6 +809,7 @@
             renderGraph();
         }
 
+        // Preencher valores ao abrir o painel
         function showEditPanel(node) {
             editPanel.style.display = 'block';
             document.getElementById('edit-id').value = node.id;
@@ -762,6 +902,30 @@
                 arrowSettingsGroup.style.display = 'none';
             }
 
+            // Preenche campos de geometria
+            nodeGeometryGroup.style.display = 'block';
+            nodeXInput.value = node.x || 0;
+            nodeYInput.value = node.y || 0;
+            nodeWidthInput.value = node.nodeWidth || node.nodeSize || 140;
+            nodeHeightInput.value = node.nodeHeight || node.nodeSize || 140;
+
+            // Preenche campos de geometria dos elementos internos
+            elementGeometryGroup.style.display = 'block';
+            tagXInput.value = node.tagX || 0;
+            tagYInput.value = node.tagY || 0;
+            tagWidthInput.value = node.tagWidth || 36;
+            tagHeightInput.value = node.tagHeight || 36;
+
+            titleXInput.value = node.titleX || 0;
+            titleYInput.value = node.titleY || 0;
+            titleWidthInput.value = node.titleWidth || 120;
+            titleHeightInput.value = node.titleHeight || 24;
+
+            textXInput.value = node.textX || 0;
+            textYInput.value = node.textY || 0;
+            textWidthInput.value = node.textWidth || 120;
+            textHeightInput.value = node.textHeight || 60;
+
             setTimeout(drawConnections, 0);
         }
 
@@ -784,6 +948,141 @@
         arrowColorInput.addEventListener('input', function () {
             if (selectedNode) {
                 selectedNode.arrowColor = this.value;
+                renderGraph();
+            }
+        });
+
+        // Atualiza X
+        nodeXInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.x = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        // Atualiza Y
+        nodeYInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.y = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        // Atualiza largura
+        nodeWidthInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 40) val = 40;
+                if (val > 800) val = 800;
+                selectedNode.nodeWidth = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+        // Atualiza altura
+        nodeHeightInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 40) val = 40;
+                if (val > 800) val = 800;
+                selectedNode.nodeHeight = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+
+        // Atualiza geometria dos elementos internos
+        tagXInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.tagX = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        tagYInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.tagY = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        tagWidthInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 10) val = 10;
+                if (val > 200) val = 200;
+                selectedNode.tagWidth = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+        tagHeightInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 10) val = 10;
+                if (val > 200) val = 200;
+                selectedNode.tagHeight = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+        titleXInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.titleX = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        titleYInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.titleY = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        titleWidthInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 10) val = 10;
+                if (val > 300) val = 300;
+                selectedNode.titleWidth = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+        titleHeightInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 10) val = 10;
+                if (val > 100) val = 100;
+                selectedNode.titleHeight = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+        textXInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.textX = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        textYInput.addEventListener('input', function () {
+            if (selectedNode) {
+                selectedNode.textY = parseInt(this.value) || 0;
+                renderGraph();
+            }
+        });
+        textWidthInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 10) val = 10;
+                if (val > 300) val = 300;
+                selectedNode.textWidth = val;
+                this.value = val;
+                renderGraph();
+            }
+        });
+        textHeightInput.addEventListener('input', function () {
+            if (selectedNode) {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 10) val = 10;
+                if (val > 200) val = 200;
+                selectedNode.textHeight = val;
+                this.value = val;
                 renderGraph();
             }
         });
@@ -998,6 +1297,134 @@
                 this.value = val;
                 renderGraph();
             }
+        });
+
+        // Toggle para grupos de geometria
+        document.querySelectorAll('.toggle-header').forEach(header => {
+            header.addEventListener('click', function () {
+                const group = this.parentElement;
+                group.classList.toggle('open');
+                // Sempre que abrir, atualiza os valores dos campos com os valores atuais do nó selecionado
+                if (group.classList.contains('open') && selectedNode) {
+                    if (group.id === 'toggle-node-geometry') {
+                        nodeXInput.value = selectedNode.x || 0;
+                        nodeYInput.value = selectedNode.y || 0;
+                        nodeWidthInput.value = selectedNode.nodeWidth || selectedNode.nodeSize || 140;
+                        nodeHeightInput.value = selectedNode.nodeHeight || selectedNode.nodeSize || 140;
+                    }
+                    if (group.id === 'toggle-element-geometry') {
+                        tagXInput.value = selectedNode.tagX || 0;
+                        tagYInput.value = selectedNode.tagY || 0;
+                        tagWidthInput.value = selectedNode.tagWidth || 36;
+                        tagHeightInput.value = selectedNode.tagHeight || 36;
+
+                        titleXInput.value = selectedNode.titleX || 0;
+                        titleYInput.value = selectedNode.titleY || 0;
+                        titleWidthInput.value = selectedNode.titleWidth || 120;
+                        titleHeightInput.value = selectedNode.titleHeight || 24;
+
+                        textXInput.value = selectedNode.textX || 0;
+                        textYInput.value = selectedNode.textY || 0;
+                        textWidthInput.value = selectedNode.textWidth || 120;
+                        textHeightInput.value = selectedNode.textHeight || 60;
+                    }
+                }
+            });
+        });
+
+        // Manipulação em tempo real dos elementos do nó selecionado
+        function updateNodeElementProperty(prop, value) {
+            if (!selectedNode) return;
+            selectedNode[prop] = value;
+            renderGraph();
+        }
+
+        // Node geometry
+        nodeXInput.addEventListener('input', function () {
+            updateNodeElementProperty('x', parseInt(this.value) || 0);
+        });
+        nodeYInput.addEventListener('input', function () {
+            updateNodeElementProperty('y', parseInt(this.value) || 0);
+        });
+        nodeWidthInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 40) val = 40;
+            if (val > 800) val = 800;
+            this.value = val;
+            updateNodeElementProperty('nodeWidth', val);
+        });
+        nodeHeightInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 40) val = 40;
+            if (val > 800) val = 800;
+            this.value = val;
+            updateNodeElementProperty('nodeHeight', val);
+        });
+
+        // Tag geometry
+        tagXInput.addEventListener('input', function () {
+            updateNodeElementProperty('tagX', parseInt(this.value) || 0);
+        });
+        tagYInput.addEventListener('input', function () {
+            updateNodeElementProperty('tagY', parseInt(this.value) || 0);
+        });
+        tagWidthInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 10) val = 10;
+            if (val > 200) val = 200;
+            this.value = val;
+            updateNodeElementProperty('tagWidth', val);
+        });
+        tagHeightInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 10) val = 10;
+            if (val > 200) val = 200;
+            this.value = val;
+            updateNodeElementProperty('tagHeight', val);
+        });
+
+        // Title geometry
+        titleXInput.addEventListener('input', function () {
+            updateNodeElementProperty('titleX', parseInt(this.value) || 0);
+        });
+        titleYInput.addEventListener('input', function () {
+            updateNodeElementProperty('titleY', parseInt(this.value) || 0);
+        });
+        titleWidthInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 10) val = 10;
+            if (val > 300) val = 300;
+            this.value = val;
+            updateNodeElementProperty('titleWidth', val);
+        });
+        titleHeightInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 10) val = 10;
+            if (val > 100) val = 100;
+            this.value = val;
+            updateNodeElementProperty('titleHeight', val);
+        });
+
+        // Text geometry
+        textXInput.addEventListener('input', function () {
+            updateNodeElementProperty('textX', parseInt(this.value) || 0);
+        });
+        textYInput.addEventListener('input', function () {
+            updateNodeElementProperty('textY', parseInt(this.value) || 0);
+        });
+        textWidthInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 10) val = 10;
+            if (val > 300) val = 300;
+            this.value = val;
+            updateNodeElementProperty('textWidth', val);
+        });
+        textHeightInput.addEventListener('input', function () {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 10) val = 10;
+            if (val > 200) val = 200;
+            this.value = val;
+            updateNodeElementProperty('textHeight', val);
         });
     </script>
 
