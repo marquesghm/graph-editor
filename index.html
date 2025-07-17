@@ -25,6 +25,8 @@
             align-items: center;
             height: 40px;
             flex-shrink: 0;
+            z-index: 1001;
+            position: relative;
         }
 
         header button {
@@ -559,19 +561,21 @@
                     let edgeY = toY;
                     if (dist > 0) {
                         if (toNode.photo) {
-                            // Retângulo
+                            // Retângulo (ajuste para borda real do retângulo)
                             const w = toNode.nodeSize || 140;
                             const h = toNode.nodeSize || 140;
                             const tx = -dx / dist;
                             const ty = -dy / dist;
                             const rectHalfW = w / 2;
                             const rectHalfH = h / 2;
-                            const scale = 1 / Math.max(
-                                Math.abs(tx) / rectHalfW,
-                                Math.abs(ty) / rectHalfH
-                            );
-                            edgeX = adjToX + tx * rectHalfW * scale;
-                            edgeY = toY + ty * rectHalfH * scale;
+
+                            // Calcula interseção com a borda do retângulo
+                            let scaleX = rectHalfW / Math.abs(tx || 1e-6);
+                            let scaleY = rectHalfH / Math.abs(ty || 1e-6);
+                            let scale = Math.min(scaleX, scaleY);
+
+                            edgeX = adjToX + tx * scale;
+                            edgeY = toY + ty * scale;
                         } else {
                             // Círculo
                             const r = (toNode.nodeSize || 140) / 2;
@@ -643,6 +647,9 @@
 
 
         function renderGraph() {
+            // Primeiro desenha as linhas (SVG)
+            drawConnections();
+            // Depois desenha os nós (eles ficam acima das linhas)
             graphArea.innerHTML = '';
             graphData.nodes.forEach(node => {
                 const nodeEl = createNodeElement(node);
@@ -651,7 +658,6 @@
                 }
                 graphArea.appendChild(nodeEl);
             });
-            drawConnections();
         }
 
         function selectNode(id) {
