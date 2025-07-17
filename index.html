@@ -508,8 +508,16 @@
             drawConnections();
         }
 
+        function getOffsetX() {
+            if (editPanel.style.display === 'none') return 0;
+            return (editPanel.offsetWidth) - (editPanel.offsetWidth * zoom); // largura do painel
+        }
+
+
         function drawConnections() {
             while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+            const offsetX = getOffsetX(); // <- aqui
 
             const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
             const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
@@ -528,7 +536,7 @@
             svg.appendChild(defs);
 
             graphData.nodes.forEach(n => {
-                const fromX = n.x + 70;
+                const fromX = n.x + 70; // centro do nó
                 const fromY = n.y + 70;
 
                 n.connections.forEach(conn => {
@@ -538,10 +546,14 @@
                     const toX = toNode.x + 70;
                     const toY = toNode.y + 70;
 
+                    // Aplique o offsetX nas posições X
+                    const adjFromX = fromX - offsetX;
+                    const adjToX = toX - offsetX;
+
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", fromX);
+                    line.setAttribute("x1", adjFromX);
                     line.setAttribute("y1", fromY);
-                    line.setAttribute("x2", toX);
+                    line.setAttribute("x2", adjToX);
                     line.setAttribute("y2", toY);
                     line.setAttribute("stroke", conn.color || "#444");
                     line.setAttribute("stroke-width", "3");
@@ -549,16 +561,16 @@
                     svg.appendChild(line);
 
                     const arrowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    arrowLine.setAttribute("x1", fromX);
+                    arrowLine.setAttribute("x1", adjFromX);
                     arrowLine.setAttribute("y1", fromY);
-                    arrowLine.setAttribute("x2", toX);
+                    arrowLine.setAttribute("x2", adjToX);
                     arrowLine.setAttribute("y2", toY);
                     arrowLine.setAttribute("stroke", "none");
                     arrowLine.setAttribute("marker-end", "url(#arrow)");
                     svg.appendChild(arrowLine);
 
                     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    text.setAttribute("x", (fromX + toX) / 2);
+                    text.setAttribute("x", (adjFromX + adjToX) / 2);
                     text.setAttribute("y", (fromY + toY) / 2 - 10);
                     text.setAttribute("fill", conn.color || "#444");
                     text.setAttribute("font-size", "14");
@@ -569,6 +581,8 @@
                 });
             });
         }
+
+
 
 
 
@@ -675,6 +689,7 @@
                 photoHideGroup.style.display = 'none';
             }
             photoInput.value = '';
+            setTimeout(drawConnections, 0);
         }
 
         photoHideCheckbox.addEventListener('change', function () {
@@ -688,6 +703,7 @@
             selectedNode = null;
             editPanel.style.display = 'none';
             renderGraph();
+            setTimeout(drawConnections, 0);
         }
 
         editForm.addEventListener('submit', e => {
