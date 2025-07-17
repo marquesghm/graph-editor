@@ -243,6 +243,11 @@
                 <div id="edit-connections-list"></div>
                 <button type="button" id="add-connection-btn">Adicionar Conexão</button>
 
+                <label for="edit-photo">Foto do Nó</label>
+                <input type="file" id="edit-photo" accept="image/*" />
+                <img id="photo-preview" src="" alt="Prévia da foto"
+                    style="display:none;max-width:100%;margin-top:8px;" />
+
                 <button type="submit">Salvar</button>
                 <button type="button" id="duplicate-node-btn"
                     style="background:#0078d7; color:#fff; margin-left: 10px;">Duplicar Nó</button>
@@ -396,6 +401,16 @@
                 node.y = newY;
                 drawConnections();
             });
+
+            if (node.photo) {
+                const img = document.createElement('img');
+                img.src = node.photo;
+                img.alt = 'Foto do nó';
+                img.style.maxWidth = '80px';
+                img.style.maxHeight = '80px';
+                img.style.margin = '6px 0';
+                nodeEl.appendChild(img);
+            }
 
             return nodeEl;
         }
@@ -568,6 +583,15 @@
 
                 connectionsList.appendChild(div);
             });
+
+            if (node.photo) {
+                photoPreview.src = node.photo;
+                photoPreview.style.display = 'block';
+            } else {
+                photoPreview.src = '';
+                photoPreview.style.display = 'none';
+            }
+            photoInput.value = '';
         }
 
         function hideEditPanel() {
@@ -693,9 +717,25 @@
             }
         });
 
-
         // Inicializa
+        // Inicializa;
         renderGraph();
+        const photoInput = document.getElementById('edit-photo');
+        const photoPreview = document.getElementById('photo-preview');
+        photoInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                if (selectedNode) {
+                    selectedNode.photo = e.target.result;
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    renderGraph();
+                }
+            };
+            reader.readAsDataURL(file);
+        });
     </script>
 
 </body>
