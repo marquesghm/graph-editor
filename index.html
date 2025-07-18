@@ -55,7 +55,7 @@
     #graph-area {
       flex: 1;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
 
     svg#connections-svg {
@@ -643,8 +643,8 @@
         if (!dragging) return;
         let newX = e.clientX - offsetX;
         let newY = e.clientY - offsetY;
-        newX = Math.max(0, Math.min(graphArea.clientWidth - nodeEl.clientWidth, newX));
-        newY = Math.max(0, Math.min(graphArea.clientHeight - nodeEl.clientHeight, newY));
+        // newX = Math.max(0, Math.min(graphArea.clientWidth - nodeEl.clientWidth, newX)); removido para permitir area infinita
+        // newY = Math.max(0, Math.min(graphArea.clientHeight - nodeEl.clientHeight, newY)); removido para permitir area infinita
         nodeEl.style.left = newX + 'px';
         nodeEl.style.top = newY + 'px';
         node.x = newX;
