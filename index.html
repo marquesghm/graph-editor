@@ -2,1431 +2,1430 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Graph Editor com Salvar e Salvar Como</title>
-    <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Graph Editor com Salvar e Salvar Como</title>
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-        header {
-            background: #333;
-            color: #fff;
-            padding: 0 1rem;
-            display: flex;
-            align-items: center;
-            height: 40px;
-            flex-shrink: 0;
-            z-index: 1001;
-            position: relative;
-        }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      height: 40px;
+      flex-shrink: 0;
+      z-index: 1001;
+      position: relative;
+    }
 
-        header button {
-            margin-right: 10px;
-            background: #555;
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            cursor: pointer;
-            border-radius: 3px;
-            font-size: 14px;
-        }
+    header button {
+      margin-right: 10px;
+      background: #555;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 14px;
+    }
 
-        header button:hover {
-            background: #777;
-        }
+    header button:hover {
+      background: #777;
+    }
 
-        #container {
-            flex: 1;
-            display: flex;
-            height: calc(100% - 40px);
-            position: relative;
-            background: #fafafa;
-        }
+    #container {
+      flex: 1;
+      display: flex;
+      height: calc(100% - 40px);
+      position: relative;
+      background: #fafafa;
+    }
 
-        #graph-area {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
+    #graph-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
 
-        svg#connections-svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
+    svg#connections-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-        .node {
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background-color: #a2d5f2;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            cursor: grab;
-            user-select: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            box-sizing: border-box;
-            color: #222;
-            z-index: 1;
-            text-align: center;
-            transition: box-shadow 0.2s ease;
-        }
+    .node {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background-color: #a2d5f2;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+      color: #222;
+      z-index: 1;
+      text-align: center;
+      transition: box-shadow 0.2s ease;
+    }
 
-        .node.selected {
-            box-shadow: 0 0 10px 4px #0078d7;
-        }
+    .node.selected {
+      box-shadow: 0 0 10px 4px #0078d7;
+    }
 
-        .number-tag {
-            position: absolute;
-            top: -36px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 50%;
-            border: 2px solid #444;
-            background: white;
-            font-weight: bold;
-            font-size: 18px;
-            text-align: center;
-            line-height: 32px;
-            cursor: text;
-            user-select: text;
-        }
+    .number-tag {
+      position: absolute;
+      top: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      border: 2px solid #444;
+      background: white;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      line-height: 32px;
+      cursor: text;
+      user-select: text;
+    }
 
-        .node .title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-            word-wrap: break-word;
-        }
+    .node .title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      word-wrap: break-word;
+    }
 
-        .node .summary {
-            font-size: 0.9rem;
-            color: #444;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-        }
+    .node .summary {
+      font-size: 0.9rem;
+      color: #444;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+    }
 
-        #edit-panel {
-            width: 350px;
-            background: #fff;
-            border-left: 1px solid #ccc;
-            padding: 15px;
-            box-sizing: border-box;
-            display: none;
-            flex-shrink: 0;
-            overflow-y: auto;
-        }
+    #edit-panel {
+      width: 350px;
+      background: #fff;
+      border-left: 1px solid #ccc;
+      padding: 15px;
+      box-sizing: border-box;
+      display: none;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
 
-        #edit-panel h2 {
-            margin-top: 0;
-        }
+    #edit-panel h2 {
+      margin-top: 0;
+    }
 
-        #edit-panel label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
+    #edit-panel label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
 
-        #edit-panel input[type="text"],
-        #edit-panel input[type="number"],
-        #edit-panel textarea,
-        #edit-panel input[type="color"] {
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 4px;
-            padding: 6px;
-            font-size: 1rem;
-        }
+    #edit-panel input[type="text"],
+    #edit-panel input[type="number"],
+    #edit-panel textarea,
+    #edit-panel input[type="color"] {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 4px;
+      padding: 6px;
+      font-size: 1rem;
+    }
 
-        #edit-panel textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
+    #edit-panel textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
 
-        #edit-panel button {
-            margin-top: 15px;
-            padding: 8px 16px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
+    #edit-panel button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
 
-        #edit-connections-list>div {
-            display: flex;
-            gap: 5px;
-            margin-top: 6px;
-            align-items: center;
-        }
+    #edit-connections-list>div {
+      display: flex;
+      gap: 5px;
+      margin-top: 6px;
+      align-items: center;
+    }
 
-        #edit-connections-list input[type="number"] {
-            width: 25%;
-        }
+    #edit-connections-list input[type="number"] {
+      width: 25%;
+    }
 
-        #edit-connections-list input[type="text"] {
-            width: 45%;
-        }
+    #edit-connections-list input[type="text"] {
+      width: 45%;
+    }
 
-        #edit-connections-list input[type="color"] {
-            width: 15%;
-            padding: 0;
-            height: 30px;
-        }
+    #edit-connections-list input[type="color"] {
+      width: 15%;
+      padding: 0;
+      height: 30px;
+    }
 
-        #edit-connections-list button.remove-conn-btn {
-            width: 15%;
-            background: #d9534f;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 3px;
-            font-weight: bold;
-        }
+    #edit-connections-list button.remove-conn-btn {
+      width: 15%;
+      background: #d9534f;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 3px;
+      font-weight: bold;
+    }
 
-        #edit-connections-list button.remove-conn-btn:hover {
-            background: #c9302c;
-        }
+    #edit-connections-list button.remove-conn-btn:hover {
+      background: #c9302c;
+    }
 
-        #arrow-settings-group {
-            display: none;
-            margin-top: 10px;
-        }
+    #arrow-settings-group {
+      display: none;
+      margin-top: 10px;
+    }
 
-        .toggle-group {
-            margin-top: 10px;
-            border: 1px solid #eee;
-            border-radius: 6px;
-            background: #f9f9f9;
-            padding: 0;
-        }
+    .toggle-group {
+      margin-top: 10px;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      background: #f9f9f9;
+      padding: 0;
+    }
 
-        .toggle-header {
-            cursor: pointer;
-            padding: 8px 10px;
-            font-weight: bold;
-            background: #f1f1f1;
-            border-bottom: 1px solid #eee;
-            user-select: none;
-        }
+    .toggle-header {
+      cursor: pointer;
+      padding: 8px 10px;
+      font-weight: bold;
+      background: #f1f1f1;
+      border-bottom: 1px solid #eee;
+      user-select: none;
+    }
 
-        .toggle-content {
-            display: none;
-            padding: 10px;
-        }
+    .toggle-content {
+      display: none;
+      padding: 10px;
+    }
 
-        .toggle-group.open .toggle-content {
-            display: block;
-        }
-    </style>
+    .toggle-group.open .toggle-content {
+      display: block;
+    }
+  </style>
 </head>
 
 <body>
 
-    <header>
-        <button id="save-btn">Salvar</button>
-        <button id="save-as-btn">Salvar Como</button>
-        <button id="load-btn">Carregar</button>
-        <button id="add-node-btn">Add Node</button>
-    </header>
+  <header>
+    <button id="save-btn">Salvar</button>
+    <button id="save-as-btn">Salvar Como</button>
+    <button id="load-btn">Carregar</button>
+    <button id="add-node-btn">Add Node</button>
+  </header>
 
-    <div id="container">
-        <div id="graph-area"></div>
-        <svg id="connections-svg"></svg>
+  <div id="container">
+    <svg id="connections-svg"></svg>
+    <div id="graph-area"></div>
 
-        <div id="edit-panel">
-            <h2>Editar Nó</h2>
-            <form id="edit-form">
-                <label for="edit-id">ID (único)</label>
-                <input type="number" id="edit-id" min="1" required />
+    <div id="edit-panel">
+      <h2>Editar Nó</h2>
+      <form id="edit-form">
+        <label for="edit-id">ID (único)</label>
+        <input type="number" id="edit-id" min="1" required />
 
-                <label for="edit-title">Título</label>
-                <input type="text" id="edit-title" required />
+        <label for="edit-title">Título</label>
+        <input type="text" id="edit-title" required />
 
-                <label for="edit-content">Conteúdo</label>
-                <textarea id="edit-content" rows="5" required></textarea>
+        <label for="edit-content">Conteúdo</label>
+        <textarea id="edit-content" rows="5" required></textarea>
 
-                <label for="edit-color">Cor do Nó</label>
-                <input type="color" id="edit-color" value="#a2d5f2" />
+        <label for="edit-color">Cor do Nó</label>
+        <input type="color" id="edit-color" value="#a2d5f2" />
 
-                <label>Conexões</label>
-                <div id="edit-connections-list"></div>
-                <button type="button" id="add-connection-btn">Adicionar Conexão</button>
+        <label>Conexões</label>
+        <div id="edit-connections-list"></div>
+        <button type="button" id="add-connection-btn">Adicionar Conexão</button>
 
-                <label for="edit-photo">Foto do Nó</label>
-                <input type="file" id="edit-photo" accept="image/*" />
-                <img id="photo-preview" src="" alt="Prévia da foto"
-                    style="display:none;max-width:100%;margin-top:8px;" />
+        <label for="edit-photo">Foto do Nó</label>
+        <input type="file" id="edit-photo" accept="image/*" />
+        <img id="photo-preview" src="" alt="Prévia da foto" style="display:none;max-width:100%;margin-top:8px;" />
 
-                <div id="photo-size-group" style="display:none; margin-top:10px;">
-                    <label for="photo-size-range">Tamanho da Foto (%)</label>
-                    <input type="range" id="photo-size-range" min="40" max="100" value="80" />
-                </div>
-                <div id="photo-hide-group" style="display:none; margin-top:10px;">
-                    <label>
-                        <input type="checkbox" id="photo-hide-checkbox" />
-                        Esconder conteúdo do nó (ID, título, texto)
-                    </label>
-                </div>
-                <div id="node-size-group" style="display:none; margin-top:10px;">
-                    <label for="node-size-input">Tamanho do Nó (px)</label>
-                    <input type="number" id="node-size-input" min="40" max="400" value="140" />
-                </div>
-                <div id="arrow-settings-group" style="display:none; margin-top:10px;">
-                    <label for="arrow-size-input">Tamanho da Seta</label>
-                    <input type="number" id="arrow-size-input" min="5" max="40" value="10" />
-                    <label for="arrow-color-input" style="margin-top:6px;">Cor da Seta</label>
-                    <input type="color" id="arrow-color-input" value="#444444" />
-                </div>
-
-                <div class="toggle-group" id="toggle-node-geometry">
-                    <div class="toggle-header">Geometria do Nó</div>
-                    <div class="toggle-content">
-                        <label for="node-x-input">Posição X</label>
-                        <input type="number" id="node-x-input" min="0" step="1" />
-                        <label for="node-y-input" style="margin-top:6px;">Posição Y</label>
-                        <input type="number" id="node-y-input" min="0" step="1" />
-                        <label for="node-width-input" style="margin-top:6px;">Largura do Nó (px)</label>
-                        <input type="number" id="node-width-input" min="40" max="800" step="1" />
-                        <label for="node-height-input" style="margin-top:6px;">Altura do Nó (px)</label>
-                        <input type="number" id="node-height-input" min="40" max="800" step="1" />
-                    </div>
-                </div>
-
-                <div class="toggle-group" id="toggle-element-geometry">
-                    <div class="toggle-header">Geometria Tag, Título e Texto</div>
-                    <div class="toggle-content">
-                        <strong>Tag</strong>
-                        <label for="tag-x-input">Tag X</label>
-                        <input type="number" id="tag-x-input" min="0" step="1" />
-                        <label for="tag-y-input" style="margin-top:6px;">Tag Y</label>
-                        <input type="number" id="tag-y-input" min="0" step="1" />
-                        <label for="tag-width-input" style="margin-top:6px;">Tag Largura (px)</label>
-                        <input type="number" id="tag-width-input" min="10" max="200" step="1" />
-                        <label for="tag-height-input" style="margin-top:6px;">Tag Altura (px)</label>
-                        <input type="number" id="tag-height-input" min="10" max="200" step="1" />
-
-                        <strong style="margin-top:10px;display:block;">Título</strong>
-                        <label for="title-x-input">Título X</label>
-                        <input type="number" id="title-x-input" min="0" step="1" />
-                        <label for="title-y-input" style="margin-top:6px;">Título Y</label>
-                        <input type="number" id="title-y-input" min="0" step="1" />
-                        <label for="title-width-input" style="margin-top:6px;">Título Largura (px)</label>
-                        <input type="number" id="title-width-input" min="10" max="300" step="1" />
-                        <label for="title-height-input" style="margin-top:6px;">Título Altura (px)</label>
-                        <input type="number" id="title-height-input" min="10" max="100" step="1" />
-
-                        <strong style="margin-top:10px;display:block;">Texto</strong>
-                        <label for="text-x-input">Texto X</label>
-                        <input type="number" id="text-x-input" min="0" step="1" />
-                        <label for="text-y-input" style="margin-top:6px;">Texto Y</label>
-                        <input type="number" id="text-y-input" min="0" step="1" />
-                        <label for="text-width-input" style="margin-top:6px;">Texto Largura (px)</label>
-                        <input type="number" id="text-width-input" min="10" max="300" step="1" />
-                        <label for="text-height-input" style="margin-top:6px;">Texto Altura (px)</label>
-                        <input type="number" id="text-height-input" min="10" max="200" step="1" />
-                    </div>
-                </div>
-
-                <button type="submit">Salvar</button>
-                <button type="button" id="duplicate-node-btn"
-                    style="background:#0078d7; color:#fff; margin-left: 10px;">Duplicar Nó</button>
-                <button type="button" id="delete-node-btn"
-                    style="background:#d9534f; color:#fff; margin-left: 10px;">Deletar Nó</button>
-                <button type="button" id="cancel-edit">Cancelar</button>
-                <input type="file" id="load-input" style="display:none" accept=".json" />
-            </form>
+        <div id="photo-size-group" style="display:none; margin-top:10px;">
+          <label for="photo-size-range">Tamanho da Foto (%)</label>
+          <input type="range" id="photo-size-range" min="40" max="100" value="80" />
         </div>
+        <div id="photo-hide-group" style="display:none; margin-top:10px;">
+          <label>
+            <input type="checkbox" id="photo-hide-checkbox" />
+            Esconder conteúdo do nó (ID, título, texto)
+          </label>
+        </div>
+        <div id="node-size-group" style="display:none; margin-top:10px;">
+          <label for="node-size-input">Tamanho do Nó (px)</label>
+          <input type="number" id="node-size-input" min="40" max="400" value="140" />
+        </div>
+        <div id="arrow-settings-group" style="display:none; margin-top:10px;">
+          <label for="arrow-size-input">Tamanho da Seta</label>
+          <input type="number" id="arrow-size-input" min="5" max="40" value="10" />
+          <label for="arrow-color-input" style="margin-top:6px;">Cor da Seta</label>
+          <input type="color" id="arrow-color-input" value="#444444" />
+        </div>
+
+        <div class="toggle-group" id="toggle-node-geometry">
+          <div class="toggle-header">Geometria do Nó</div>
+          <div class="toggle-content">
+            <label for="node-x-input">Posição X</label>
+            <input type="number" id="node-x-input" min="0" step="1" />
+            <label for="node-y-input" style="margin-top:6px;">Posição Y</label>
+            <input type="number" id="node-y-input" min="0" step="1" />
+            <label for="node-width-input" style="margin-top:6px;">Largura do Nó (px)</label>
+            <input type="number" id="node-width-input" min="40" max="800" step="1" />
+            <label for="node-height-input" style="margin-top:6px;">Altura do Nó (px)</label>
+            <input type="number" id="node-height-input" min="40" max="800" step="1" />
+          </div>
+        </div>
+
+        <div class="toggle-group" id="toggle-element-geometry">
+          <div class="toggle-header">Geometria Tag, Título e Texto</div>
+          <div class="toggle-content">
+            <strong>Tag</strong>
+            <label for="tag-x-input">Tag X</label>
+            <input type="number" id="tag-x-input" min="0" step="1" />
+            <label for="tag-y-input" style="margin-top:6px;">Tag Y</label>
+            <input type="number" id="tag-y-input" min="0" step="1" />
+            <label for="tag-width-input" style="margin-top:6px;">Tag Largura (px)</label>
+            <input type="number" id="tag-width-input" min="10" max="200" step="1" />
+            <label for="tag-height-input" style="margin-top:6px;">Tag Altura (px)</label>
+            <input type="number" id="tag-height-input" min="10" max="200" step="1" />
+
+            <strong style="margin-top:10px;display:block;">Título</strong>
+            <label for="title-x-input">Título X</label>
+            <input type="number" id="title-x-input" min="0" step="1" />
+            <label for="title-y-input" style="margin-top:6px;">Título Y</label>
+            <input type="number" id="title-y-input" min="0" step="1" />
+            <label for="title-width-input" style="margin-top:6px;">Título Largura (px)</label>
+            <input type="number" id="title-width-input" min="10" max="300" step="1" />
+            <label for="title-height-input" style="margin-top:6px;">Título Altura (px)</label>
+            <input type="number" id="title-height-input" min="10" max="100" step="1" />
+
+            <strong style="margin-top:10px;display:block;">Texto</strong>
+            <label for="text-x-input">Texto X</label>
+            <input type="number" id="text-x-input" min="0" step="1" />
+            <label for="text-y-input" style="margin-top:6px;">Texto Y</label>
+            <input type="number" id="text-y-input" min="0" step="1" />
+            <label for="text-width-input" style="margin-top:6px;">Texto Largura (px)</label>
+            <input type="number" id="text-width-input" min="10" max="300" step="1" />
+            <label for="text-height-input" style="margin-top:6px;">Texto Altura (px)</label>
+            <input type="number" id="text-height-input" min="10" max="200" step="1" />
+          </div>
+        </div>
+
+        <button type="submit">Salvar</button>
+        <button type="button" id="duplicate-node-btn"
+          style="background:#0078d7; color:#fff; margin-left: 10px;">Duplicar Nó</button>
+        <button type="button" id="delete-node-btn" style="background:#d9534f; color:#fff; margin-left: 10px;">Deletar
+          Nó</button>
+        <button type="button" id="cancel-edit">Cancelar</button>
+        <input type="file" id="load-input" style="display:none" accept=".json" />
+      </form>
     </div>
+  </div>
 
-    <script>
-        // Inicialize todos os elementos DOM antes de qualquer uso!
-        const graphArea = document.getElementById('graph-area');
-        const svg = document.getElementById('connections-svg');
-        const editPanel = document.getElementById('edit-panel');
-        const editForm = document.getElementById('edit-form');
-        const connectionsList = document.getElementById('edit-connections-list');
-        const photoInput = document.getElementById('edit-photo');
-        const photoPreview = document.getElementById('photo-preview');
-        const photoSizeGroup = document.getElementById('photo-size-group');
-        const photoSizeRange = document.getElementById('photo-size-range');
-        const photoHideGroup = document.getElementById('photo-hide-group');
-        const photoHideCheckbox = document.getElementById('photo-hide-checkbox');
-        const nodeSizeGroup = document.getElementById('node-size-group');
-        const nodeSizeInput = document.getElementById('node-size-input');
-        const arrowSettingsGroup = document.getElementById('arrow-settings-group');
-        const arrowSizeInput = document.getElementById('arrow-size-input');
-        const arrowColorInput = document.getElementById('arrow-color-input');
-        const nodeGeometryGroup = document.getElementById('node-geometry-group');
-        const nodeXInput = document.getElementById('node-x-input');
-        const nodeYInput = document.getElementById('node-y-input');
-        const nodeWidthInput = document.getElementById('node-width-input');
-        const nodeHeightInput = document.getElementById('node-height-input');
-        const elementGeometryGroup = document.getElementById('element-geometry-group');
-        const tagXInput = document.getElementById('tag-x-input');
-        const tagYInput = document.getElementById('tag-y-input');
-        const tagWidthInput = document.getElementById('tag-width-input');
-        const tagHeightInput = document.getElementById('tag-height-input');
-        const titleXInput = document.getElementById('title-x-input');
-        const titleYInput = document.getElementById('title-y-input');
-        const titleWidthInput = document.getElementById('title-width-input');
-        const titleHeightInput = document.getElementById('title-height-input');
-        const textXInput = document.getElementById('text-x-input');
-        const textYInput = document.getElementById('text-y-input');
-        const textWidthInput = document.getElementById('text-width-input');
-        const textHeightInput = document.getElementById('text-height-input');
+  <script>
+    // Inicialize todos os elementos DOM antes de qualquer uso!
+    const graphArea = document.getElementById('graph-area');
+    const svg = document.getElementById('connections-svg');
+    const editPanel = document.getElementById('edit-panel');
+    const editForm = document.getElementById('edit-form');
+    const connectionsList = document.getElementById('edit-connections-list');
+    const photoInput = document.getElementById('edit-photo');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoSizeGroup = document.getElementById('photo-size-group');
+    const photoSizeRange = document.getElementById('photo-size-range');
+    const photoHideGroup = document.getElementById('photo-hide-group');
+    const photoHideCheckbox = document.getElementById('photo-hide-checkbox');
+    const nodeSizeGroup = document.getElementById('node-size-group');
+    const nodeSizeInput = document.getElementById('node-size-input');
+    const arrowSettingsGroup = document.getElementById('arrow-settings-group');
+    const arrowSizeInput = document.getElementById('arrow-size-input');
+    const arrowColorInput = document.getElementById('arrow-color-input');
+    const nodeGeometryGroup = document.getElementById('node-geometry-group');
+    const nodeXInput = document.getElementById('node-x-input');
+    const nodeYInput = document.getElementById('node-y-input');
+    const nodeWidthInput = document.getElementById('node-width-input');
+    const nodeHeightInput = document.getElementById('node-height-input');
+    const elementGeometryGroup = document.getElementById('element-geometry-group');
+    const tagXInput = document.getElementById('tag-x-input');
+    const tagYInput = document.getElementById('tag-y-input');
+    const tagWidthInput = document.getElementById('tag-width-input');
+    const tagHeightInput = document.getElementById('tag-height-input');
+    const titleXInput = document.getElementById('title-x-input');
+    const titleYInput = document.getElementById('title-y-input');
+    const titleWidthInput = document.getElementById('title-width-input');
+    const titleHeightInput = document.getElementById('title-height-input');
+    const textXInput = document.getElementById('text-x-input');
+    const textYInput = document.getElementById('text-y-input');
+    const textWidthInput = document.getElementById('text-width-input');
+    const textHeightInput = document.getElementById('text-height-input');
 
-        let graphData = {
-            nodes: [
-                {
-                    id: 1,
-                    title: "Node 1",
-                    content: "Detalhes do node 1.",
-                    x: 100, y: 100,
-                    color: "#a2d5f2",
-                    connections: [
-                        { targetId: 2, label: "Link 1-2", color: "#444" }
-                    ]
-                },
-                {
-                    id: 2,
-                    title: "Node 2",
-                    content: "Conteúdo do node 2.",
-                    x: 350, y: 200,
-                    color: "#f2a2a2",
-                    connections: []
-                }
-            ]
-        };
-        let selectedNode = null;
-
-        document.getElementById('add-node-btn').addEventListener('click', () => {
-            const newId = getNextId();
-            const newNode = {
-                id: newId,
-                title: 'Novo Nodo',
-                content: "Novo Conteúdo",
-                x: 200 + Math.random() * 100,
-                y: 200 + Math.random() * 100,
-                color: "#f2a2a2",
-                connections: []
-            };
-            graphData.nodes.push(newNode);
-            renderGraph();
-        });
-
-        document.getElementById('add-connection-btn').onclick = () => {
-            if (!selectedNode) return;
-            selectedNode.connections.push({ targetId: getNextId(), label: '', color: '#444' });
-            showEditPanel(selectedNode);
-        };
-
-        document.getElementById('duplicate-node-btn').onclick = () => {
-            if (!selectedNode) return;
-            const newId = getNextId();
-            const newNode = {
-                id: newId,
-                title: selectedNode.title + ' (Cópia)',
-                content: selectedNode.content,
-                x: Math.min(graphArea.clientWidth - 140, selectedNode.x + 10),
-                y: Math.min(graphArea.clientHeight - 140, selectedNode.y + 10),
-                color: selectedNode.color,
-                connections: selectedNode.connections.map(c => ({ ...c }))
-            };
-            graphData.nodes.push(newNode);
-            renderGraph();
-            selectNode(newId);
-        };
-
-        document.getElementById('delete-node-btn').onclick = () => {
-            if (!selectedNode) return;
-            if (confirm(`Confirmar remoção do nó "${selectedNode.title}" (ID ${selectedNode.id})?`)) {
-                graphData.nodes = graphData.nodes.filter(n => n.id !== selectedNode.id);
-                graphData.nodes.forEach(n => {
-                    n.connections = n.connections.filter(c => c.targetId !== selectedNode.id);
-                });
-                hideEditPanel();
-                renderGraph();
-            }
-        };
-
-        function getNextId() {
-            let id = 1;
-            while (graphData.nodes.some(n => n.id === id)) id++;
-            return id;
+    let graphData = {
+      nodes: [
+        {
+          id: 1,
+          title: "Node 1",
+          content: "Detalhes do node 1.",
+          x: 100, y: 100,
+          color: "#a2d5f2",
+          connections: [
+            { targetId: 2, label: "Link 1-2", color: "#444" }
+          ]
+        },
+        {
+          id: 2,
+          title: "Node 2",
+          content: "Conteúdo do node 2.",
+          x: 350, y: 200,
+          color: "#f2a2a2",
+          connections: []
         }
+      ]
+    };
+    let selectedNode = null;
 
-        function createNodeElement(node) {
-            const nodeEl = document.createElement('div');
-            nodeEl.classList.add('node');
-            nodeEl.style.left = node.x + 'px';
-            nodeEl.style.top = node.y + 'px';
-            nodeEl.dataset.id = node.id;
+    document.getElementById('add-node-btn').addEventListener('click', () => {
+      const newId = getNextId();
+      const newNode = {
+        id: newId,
+        title: 'Novo Nodo',
+        content: "Novo Conteúdo",
+        x: 200 + Math.random() * 100,
+        y: 200 + Math.random() * 100,
+        color: "#f2a2a2",
+        connections: []
+      };
+      graphData.nodes.push(newNode);
+      renderGraph();
+    });
 
-            // Use nodeWidth/nodeHeight se definidos, senão nodeSize
-            const width = node.nodeWidth || node.nodeSize || 140;
-            const height = node.nodeHeight || node.nodeSize || 140;
-            nodeEl.style.width = width + 'px';
-            nodeEl.style.height = height + 'px';
+    document.getElementById('add-connection-btn').onclick = () => {
+      if (!selectedNode) return;
+      selectedNode.connections.push({ targetId: getNextId(), label: '', color: '#444' });
+      showEditPanel(selectedNode);
+    };
 
-            if (node.photo) {
-                nodeEl.innerHTML = '';
+    document.getElementById('duplicate-node-btn').onclick = () => {
+      if (!selectedNode) return;
+      const newId = getNextId();
+      const newNode = {
+        id: newId,
+        title: selectedNode.title + ' (Cópia)',
+        content: selectedNode.content,
+        x: Math.min(graphArea.clientWidth - 140, selectedNode.x + 10),
+        y: Math.min(graphArea.clientHeight - 140, selectedNode.y + 10),
+        color: selectedNode.color,
+        connections: selectedNode.connections.map(c => ({ ...c }))
+      };
+      graphData.nodes.push(newNode);
+      renderGraph();
+      selectNode(newId);
+    };
 
-                // Tamanho base do nó
-                const baseSize = node.nodeSize || 140;
-                nodeEl.style.width = baseSize + 'px';
-                nodeEl.style.height = baseSize + 'px';
-                nodeEl.style.border = '2px solid #444';
-                nodeEl.style.background = 'none';
-                nodeEl.style.backgroundColor = 'transparent';
-                nodeEl.style.overflow = 'hidden';
-                nodeEl.style.display = 'flex';
-                nodeEl.style.flexDirection = 'column';
-                nodeEl.style.alignItems = 'center';
-                nodeEl.style.justifyContent = 'flex-start';
-                nodeEl.style.borderRadius = '16px';
-                nodeEl.style.padding = '0';
-
-                // TAG (ID)
-                const numberTag = document.createElement('label');
-                numberTag.classList.add('number-tag');
-                numberTag.textContent = node.id;
-                // Atualiza CSS conforme painel lateral
-                numberTag.style.position = 'absolute';
-                numberTag.style.left = (node.tagX || 0) + 'px';
-                numberTag.style.top = (node.tagY || 0) + 'px';
-                numberTag.style.width = (node.tagWidth || 36) + 'px';
-                numberTag.style.height = (node.tagHeight || 36) + 'px';
-                // Remove alinhamento central padrão do CSS global
-                numberTag.style.transform = 'none';
-                numberTag.style.margin = '0';
-                numberTag.style.lineHeight = numberTag.style.height;
-                numberTag.style.textAlign = 'center';
-                nodeEl.appendChild(numberTag);
-
-                // TÍTULO
-                const titleEl = document.createElement('div');
-                titleEl.className = 'title';
-                titleEl.textContent = node.title;
-                // Atualiza CSS conforme painel lateral
-                titleEl.style.position = 'absolute';
-                titleEl.style.left = (node.titleX || 0) + 'px';
-                titleEl.style.top = (node.titleY || 0) + 'px';
-                titleEl.style.width = (node.titleWidth || 120) + 'px';
-                titleEl.style.height = (node.titleHeight || 24) + 'px';
-                titleEl.style.margin = '0';
-                titleEl.style.wordWrap = 'break-word';
-                titleEl.style.fontWeight = 'bold';
-                titleEl.style.fontSize = '1.1rem';
-                nodeEl.appendChild(titleEl);
-
-                // TEXTO
-                const summary = document.createElement('div');
-                summary.className = 'summary';
-                summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
-                // Atualiza CSS conforme painel lateral
-                summary.style.position = 'absolute';
-                summary.style.left = (node.textX || 0) + 'px';
-                summary.style.top = (node.textY || 0) + 'px';
-                summary.style.width = (node.textWidth || 120) + 'px';
-                summary.style.height = (node.textHeight || 60) + 'px';
-                summary.style.margin = '0';
-                summary.style.fontSize = '0.9rem';
-                summary.style.color = '#444';
-                summary.style.overflow = 'hidden';
-                summary.style.textOverflow = 'ellipsis';
-                summary.style.display = '-webkit-box';
-                summary.style.webkitLineClamp = '4';
-                summary.style.webkitBoxOrient = 'vertical';
-                nodeEl.appendChild(summary);
-
-                // Imagem ocupa o restante do nó
-                const img = document.createElement('img');
-                img.src = node.photo;
-                img.alt = 'Foto do nó';
-                img.style.objectFit = 'cover';
-                img.style.width = (node.photoSize || 80) + '%';
-                img.style.height = (node.photoSize || 80) + '%';
-                img.style.margin = 'auto';
-                img.style.display = 'block';
-                img.style.flex = '1 1 auto';
-                img.style.borderRadius = '8px';
-
-                // Ajusta proporção do nó conforme a imagem
-                img.onload = function () {
-                    const aspect = img.naturalWidth / img.naturalHeight;
-                    let width = baseSize, height = baseSize;
-                    if (aspect > 1) {
-                        width = baseSize;
-                        height = Math.round(baseSize / aspect);
-                    } else {
-                        height = baseSize;
-                        width = Math.round(baseSize * aspect);
-                    }
-                    nodeEl.style.width = width + 'px';
-                    nodeEl.style.height = height + (node.hideContent ? 0 : 60) + 'px';
-                };
-                if (img.complete && img.naturalWidth) img.onload();
-
-                nodeEl.appendChild(img);
-            } else {
-                nodeEl.style.backgroundColor = node.color;
-                nodeEl.style.backgroundImage = '';
-                nodeEl.style.border = '';
-                nodeEl.style.borderRadius = '50%';
-                nodeEl.style.overflow = 'visible';
-                nodeEl.style.display = 'flex';
-
-                // TAG (ID)
-                const numberTag = document.createElement('label');
-                numberTag.classList.add('number-tag');
-                numberTag.textContent = node.id;
-                // Atualiza CSS conforme painel lateral
-                numberTag.style.position = 'absolute';
-                numberTag.style.left = (node.tagX || 0) + 'px';
-                numberTag.style.top = (node.tagY || 0) + 'px';
-                numberTag.style.width = (node.tagWidth || 36) + 'px';
-                numberTag.style.height = (node.tagHeight || 36) + 'px';
-                // Remove alinhamento central padrão do CSS global
-                numberTag.style.transform = 'none';
-                numberTag.style.margin = '0';
-                numberTag.style.lineHeight = numberTag.style.height;
-                numberTag.style.textAlign = 'center';
-                nodeEl.appendChild(numberTag);
-
-                const titleEl = document.createElement('div');
-                titleEl.className = 'title';
-                titleEl.textContent = node.title;
-                nodeEl.appendChild(titleEl);
-
-                // TEXTO
-                const summary = document.createElement('div');
-                summary.className = 'summary';
-                summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
-                nodeEl.appendChild(summary);
-            }
-
-            nodeEl.addEventListener('click', e => {
-                e.stopPropagation();
-                selectNode(node.id);
-            });
-
-            let offsetX, offsetY, dragging = false;
-            nodeEl.addEventListener('mousedown', e => {
-                dragging = true;
-                offsetX = e.clientX - nodeEl.offsetLeft;
-                offsetY = e.clientY - nodeEl.offsetTop;
-                nodeEl.style.cursor = 'grabbing';
-                e.preventDefault();
-            });
-            window.addEventListener('mouseup', () => {
-                dragging = false;
-                nodeEl.style.cursor = 'grab';
-            });
-            window.addEventListener('mousemove', e => {
-                if (!dragging) return;
-                let newX = e.clientX - offsetX;
-                let newY = e.clientY - offsetY;
-                newX = Math.max(0, Math.min(graphArea.clientWidth - nodeEl.clientWidth, newX));
-                newY = Math.max(0, Math.min(graphArea.clientHeight - nodeEl.clientHeight, newY));
-                nodeEl.style.left = newX + 'px';
-                nodeEl.style.top = newY + 'px';
-                node.x = newX;
-                node.y = newY;
-                drawConnections();
-            });
-
-            return nodeEl;
-        }
-
-        function applyTransform() {
-            // Aplica zoom e pan em tudo, inclusive nas linhas
-            graphArea.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
-            svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
-            drawConnections();
-        }
-
-        function getOffsetX() {
-            if (editPanel.style.display === 'none') return 0;
-            return (editPanel.offsetWidth) - (editPanel.offsetWidth * zoom); // largura do painel
-        }
-
-
-        function drawConnections() {
-            while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-            const offsetX = getOffsetX();
-
-            graphData.nodes.forEach(n => {
-                const fromNode = n;
-                const fromX = fromNode.x + (fromNode.nodeSize || 140) / 2;
-                const fromY = fromNode.y + (fromNode.nodeSize || 140) / 2;
-
-                n.connections.forEach(conn => {
-                    const toNode = graphData.nodes.find(nd => nd.id === conn.targetId);
-                    if (!toNode) return;
-
-                    const toX = toNode.x + (toNode.nodeSize || 140) / 2;
-                    const toY = toNode.y + (toNode.nodeSize || 140) / 2;
-
-                    // Aplique o offsetX nas posições X
-                    const adjFromX = fromX - offsetX;
-                    const adjToX = toX - offsetX;
-
-                    // Calcula direção
-                    const dx = adjToX - adjFromX;
-                    const dy = toY - fromY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    // Calcula ponto na borda do nó de destino
-                    let edgeX = adjToX;
-                    let edgeY = toY;
-                    if (dist > 0) {
-                        if (toNode.photo) {
-                            // Retângulo (ajuste para borda real do retângulo)
-                            const w = toNode.nodeSize || 140;
-                            const h = toNode.nodeSize || 140;
-                            const tx = -dx / dist;
-                            const ty = -dy / dist;
-                            const rectHalfW = w / 2;
-                            const rectHalfH = h / 2;
-
-                            // Calcula interseção com a borda do retângulo
-                            let scaleX = rectHalfW / Math.abs(tx || 1e-6);
-                            let scaleY = rectHalfH / Math.abs(ty || 1e-6);
-                            let scale = Math.min(scaleX, scaleY);
-
-                            edgeX = adjToX + tx * scale;
-                            edgeY = toY + ty * scale;
-                        } else {
-                            // Círculo
-                            const r = (toNode.nodeSize || 140) / 2;
-                            edgeX = adjToX + (-dx / dist) * r;
-                            edgeY = toY + (-dy / dist) * r;
-                        }
-                    }
-
-                    // Linha do centro ao centro, mas desenhada abaixo dos nós (z-index via ordem de append)
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", adjFromX);
-                    line.setAttribute("y1", fromY);
-                    line.setAttribute("x2", adjToX);
-                    line.setAttribute("y2", toY);
-                    line.setAttribute("stroke", conn.color || "#444");
-                    line.setAttribute("stroke-width", "3");
-                    line.setAttribute("stroke-linecap", "round");
-                    svg.appendChild(line);
-
-                    // Seta até a borda do nó de destino
-                    // Usa tamanho e cor customizados se definidos no nó origem
-                    const arrowSize = n.arrowSize || 10;
-                    const arrowColor = n.arrowColor || '#444444';
-
-                    // Cria marker customizado para cada cor/tamanho se necessário
-                    const markerId = `arrow-${arrowSize}-${arrowColor.replace('#', '')}`;
-                    if (!svg.querySelector(`#${markerId}`)) {
-                        const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS("http://www.w3.org/2000/svg", "defs"), svg.firstChild);
-                        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
-                        marker.setAttribute("id", markerId);
-                        marker.setAttribute("markerWidth", arrowSize);
-                        marker.setAttribute("markerHeight", arrowSize);
-                        marker.setAttribute("refX", arrowSize * 0.8);
-                        marker.setAttribute("refY", arrowSize / 2);
-                        marker.setAttribute("orient", "auto");
-                        marker.setAttribute("markerUnits", "strokeWidth");
-                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                        path.setAttribute("d", `M0,0 L${arrowSize},${arrowSize / 2} L0,${arrowSize} z`);
-                        path.setAttribute("fill", arrowColor);
-                        marker.appendChild(path);
-                        defs.appendChild(marker);
-                    }
-
-                    const arrowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    arrowLine.setAttribute("x1", adjFromX);
-                    arrowLine.setAttribute("y1", fromY);
-                    arrowLine.setAttribute("x2", edgeX);
-                    arrowLine.setAttribute("y2", edgeY);
-                    arrowLine.setAttribute("stroke", "none");
-                    arrowLine.setAttribute("marker-end", `url(#${markerId})`);
-                    svg.appendChild(arrowLine);
-
-                    // Label
-                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    text.setAttribute("x", (adjFromX + adjToX) / 2);
-                    text.setAttribute("y", (fromY + toY) / 2 - 10);
-                    text.setAttribute("fill", conn.color || "#444");
-                    text.setAttribute("font-size", "14");
-                    text.setAttribute("font-family", "Arial, sans-serif");
-                    text.setAttribute("text-anchor", "middle");
-                    text.textContent = conn.label || "";
-                    svg.appendChild(text);
-                });
-            });
-        }
-
-
-
-
-
-        function renderGraph() {
-            // Primeiro desenha as linhas (SVG)
-            drawConnections();
-            // Depois desenha os nós (eles ficam acima das linhas)
-            graphArea.innerHTML = '';
-            graphData.nodes.forEach(node => {
-                const nodeEl = createNodeElement(node);
-                if (selectedNode && node.id === selectedNode.id) {
-                    nodeEl.classList.add('selected');
-                }
-                graphArea.appendChild(nodeEl);
-            });
-        }
-
-        function selectNode(id) {
-            selectedNode = graphData.nodes.find(n => n.id === id);
-            if (!selectedNode) {
-                hideEditPanel();
-                return;
-            }
-            showEditPanel(selectedNode);
-            renderGraph();
-        }
-
-        // Preencher valores ao abrir o painel
-        function showEditPanel(node) {
-            editPanel.style.display = 'block';
-            document.getElementById('edit-id').value = node.id;
-            document.getElementById('edit-title').value = node.title;
-            document.getElementById('edit-content').value = node.content;
-            document.getElementById('edit-color').value = node.color || "#a2d5f2";
-
-            connectionsList.innerHTML = '';
-
-            node.connections.forEach((conn, idx) => {
-                const div = document.createElement('div');
-
-                const targetInput = document.createElement('input');
-                targetInput.type = 'number';
-                targetInput.min = 1;
-                targetInput.value = conn.targetId;
-                targetInput.title = 'ID do Nó Alvo';
-                targetInput.addEventListener('change', () => {
-                    const val = parseInt(targetInput.value);
-                    if (isNaN(val) || val < 1 || val === node.id || !graphData.nodes.some(n => n.id === val)) {
-                        alert('ID alvo inválido');
-                        targetInput.value = conn.targetId;
-                        return;
-                    }
-                    conn.targetId = val;
-                    renderGraph();
-                });
-                div.appendChild(targetInput);
-
-                const labelInput = document.createElement('input');
-                labelInput.type = 'text';
-                labelInput.placeholder = 'Texto da conexão';
-                labelInput.value = conn.label || '';
-                labelInput.addEventListener('input', () => {
-                    conn.label = labelInput.value;
-                    renderGraph();
-                });
-                div.appendChild(labelInput);
-
-                const colorInput = document.createElement('input');
-                colorInput.type = 'color';
-                colorInput.value = conn.color || '#444';
-                colorInput.title = 'Cor da conexão';
-                colorInput.addEventListener('change', () => {
-                    conn.color = colorInput.value;
-                    renderGraph();
-                });
-                div.appendChild(colorInput);
-
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.textContent = 'X';
-                removeBtn.classList.add('remove-conn-btn');
-                removeBtn.title = 'Remover conexão';
-                removeBtn.addEventListener('click', () => {
-                    node.connections.splice(idx, 1);
-                    showEditPanel(node);
-                    renderGraph();
-                });
-                div.appendChild(removeBtn);
-
-                connectionsList.appendChild(div);
-            });
-
-            if (node.photo) {
-                photoPreview.src = node.photo;
-                photoPreview.style.display = 'block';
-                photoSizeGroup.style.display = 'block';
-                photoSizeRange.value = node.photoSize || 80;
-                nodeSizeGroup.style.display = 'block';
-                nodeSizeInput.value = node.nodeSize || 140;
-                photoHideGroup.style.display = 'block';
-                photoHideCheckbox.checked = !!node.hideContent;
-            } else {
-                photoPreview.src = '';
-                photoPreview.style.display = 'none';
-                photoSizeGroup.style.display = 'none';
-                nodeSizeGroup.style.display = 'none';
-                photoHideGroup.style.display = 'none';
-            }
-            photoInput.value = '';
-
-            // Exibe controles de seta se houver conexões
-            if (node.connections && node.connections.length > 0) {
-                arrowSettingsGroup.style.display = 'block';
-                // Usa valores do nó ou padrão
-                arrowSizeInput.value = node.arrowSize || 10;
-                arrowColorInput.value = node.arrowColor || '#444444';
-            } else {
-                arrowSettingsGroup.style.display = 'none';
-            }
-
-            // Preenche campos de geometria
-            nodeGeometryGroup.style.display = 'block';
-            nodeXInput.value = node.x || 0;
-            nodeYInput.value = node.y || 0;
-            nodeWidthInput.value = node.nodeWidth || node.nodeSize || 140;
-            nodeHeightInput.value = node.nodeHeight || node.nodeSize || 140;
-
-            // Preenche campos de geometria dos elementos internos
-            elementGeometryGroup.style.display = 'block';
-            tagXInput.value = node.tagX || 0;
-            tagYInput.value = node.tagY || 0;
-            tagWidthInput.value = node.tagWidth || 36;
-            tagHeightInput.value = node.tagHeight || 36;
-
-            titleXInput.value = node.titleX || 0;
-            titleYInput.value = node.titleY || 0;
-            titleWidthInput.value = node.titleWidth || 120;
-            titleHeightInput.value = node.titleHeight || 24;
-
-            textXInput.value = node.textX || 0;
-            textYInput.value = node.textY || 0;
-            textWidthInput.value = node.textWidth || 120;
-            textHeightInput.value = node.textHeight || 60;
-
-            setTimeout(drawConnections, 0);
-        }
-
-        photoHideCheckbox.addEventListener('change', function () {
-            if (selectedNode && selectedNode.photo) {
-                selectedNode.hideContent = this.checked;
-                renderGraph();
-            }
+    document.getElementById('delete-node-btn').onclick = () => {
+      if (!selectedNode) return;
+      if (confirm(`Confirmar remoção do nó "${selectedNode.title}" (ID ${selectedNode.id})?`)) {
+        graphData.nodes = graphData.nodes.filter(n => n.id !== selectedNode.id);
+        graphData.nodes.forEach(n => {
+          n.connections = n.connections.filter(c => c.targetId !== selectedNode.id);
         });
-
-        // Atualiza tamanho da seta
-        arrowSizeInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.arrowSize = parseInt(this.value);
-                renderGraph();
-            }
-        });
-
-        // Atualiza cor da seta
-        arrowColorInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.arrowColor = this.value;
-                renderGraph();
-            }
-        });
-
-        // Atualiza X
-        nodeXInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.x = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        // Atualiza Y
-        nodeYInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.y = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        // Atualiza largura
-        nodeWidthInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 40) val = 40;
-                if (val > 800) val = 800;
-                selectedNode.nodeWidth = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-        // Atualiza altura
-        nodeHeightInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 40) val = 40;
-                if (val > 800) val = 800;
-                selectedNode.nodeHeight = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-
-        // Atualiza geometria dos elementos internos
-        tagXInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.tagX = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        tagYInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.tagY = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        tagWidthInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 10) val = 10;
-                if (val > 200) val = 200;
-                selectedNode.tagWidth = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-        tagHeightInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 10) val = 10;
-                if (val > 200) val = 200;
-                selectedNode.tagHeight = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-        titleXInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.titleX = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        titleYInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.titleY = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        titleWidthInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 10) val = 10;
-                if (val > 300) val = 300;
-                selectedNode.titleWidth = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-        titleHeightInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 10) val = 10;
-                if (val > 100) val = 100;
-                selectedNode.titleHeight = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-        textXInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.textX = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        textYInput.addEventListener('input', function () {
-            if (selectedNode) {
-                selectedNode.textY = parseInt(this.value) || 0;
-                renderGraph();
-            }
-        });
-        textWidthInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 10) val = 10;
-                if (val > 300) val = 300;
-                selectedNode.textWidth = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-        textHeightInput.addEventListener('input', function () {
-            if (selectedNode) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 10) val = 10;
-                if (val > 200) val = 200;
-                selectedNode.textHeight = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
-
-        function hideEditPanel() {
-            selectedNode = null;
-            editPanel.style.display = 'none';
-            renderGraph();
-            setTimeout(drawConnections, 0);
-        }
-
-        editForm.addEventListener('submit', e => {
-            e.preventDefault();
-            if (!selectedNode) return;
-
-            const newId = parseInt(document.getElementById('edit-id').value);
-            if (isNaN(newId) || newId < 1) {
-                alert("ID deve ser um número válido e maior que zero");
-                return;
-            }
-            if (graphData.nodes.some(n => n.id === newId && n !== selectedNode)) {
-                alert("ID deve ser único");
-                return;
-            }
-
-            for (const conn of selectedNode.connections) {
-                if (typeof conn.targetId !== 'number' || conn.targetId < 1 || !graphData.nodes.some(n => n.id === conn.targetId)) {
-                    alert('Alguma conexão possui ID alvo inválido.');
-                    return;
-                }
-            }
-
-            const oldId = selectedNode.id;
-            selectedNode.id = newId;
-            selectedNode.title = document.getElementById('edit-title').value.trim();
-            selectedNode.content = document.getElementById('edit-content').value.trim();
-            selectedNode.color = document.getElementById('edit-color').value;
-
-            if (oldId !== newId) {
-                graphData.nodes.forEach(n => {
-                    n.connections.forEach(c => {
-                        if (c.targetId === oldId) c.targetId = newId;
-                    });
-                });
-            }
-
-            hideEditPanel();
-        });
-
-        document.getElementById('cancel-edit').addEventListener('click', e => {
-            e.preventDefault();
-            hideEditPanel();
-        });
-
-        graphArea.addEventListener('click', () => {
-            hideEditPanel();
-        });
-
-        document.getElementById('save-btn').addEventListener('click', () => {
-            const dataStr = JSON.stringify(graphData, null, 2);
-            download('graph.json', dataStr);
-        });
-
-        document.getElementById('save-as-btn').addEventListener('click', () => {
-            let filename = prompt('Digite o nome do arquivo (sem extensão)', 'graph');
-            if (!filename) return;
-            if (!filename.toLowerCase().endsWith('.json')) filename += '.json';
-            const dataStr = JSON.stringify(graphData, null, 2);
-            download(filename, dataStr);
-        });
-
-        // download com zoom e pan
-        function download(filename, text) {
-            const data = {
-                ...JSON.parse(text),
-                __zoom: zoom,
-                __translateX: translateX,
-                __translateY: translateY
-            };
-            const element = document.createElement('a');
-            element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2)));
-            element.setAttribute('download', filename);
-            element.style.display = 'none';
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        }
-
-        document.getElementById('load-btn').addEventListener('click', () => {
-            document.getElementById('load-input').click();
-        });
-
-        document.getElementById('load-input').addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                try {
-                    const loadedData = JSON.parse(e.target.result);
-                    if (loadedData.nodes && Array.isArray(loadedData.nodes)) {
-                        graphData = loadedData;
-                        zoom = loadedData.__zoom || 1;
-                        translateX = loadedData.__translateX || 0;
-                        translateY = loadedData.__translateY || 0;
-                        applyTransform();
-                        hideEditPanel();
-                        renderGraph();
-                    } else {
-                        alert('Arquivo JSON inválido.');
-                    }
-                } catch {
-                    alert('Erro ao carregar JSON.');
-                }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
-        });
-
-        // Zoom e pan
-        let zoom = 1;
-        let translateX = 0;
-        let translateY = 0;
-        let isPanning = false;
-        let panStart = { x: 0, y: 0 };
-
-        // Aplica transformações de zoom e pan
-        function applyTransform() {
-            // Aplica zoom e pan em tudo, inclusive nas linhas
-            graphArea.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
-            svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
-            drawConnections();
-        }
-
-        // Mouse wheel para zoom
-        graphArea.addEventListener('wheel', function (e) {
-            if (e.ctrlKey) return; // deixa zoom do navegador funcionar normalmente
-            e.preventDefault();
-            const scaleAmount = 0.1;
-            const oldZoom = zoom;
-            if (e.deltaY < 0) {
-                zoom = Math.min(zoom + scaleAmount, 3);
-            } else {
-                zoom = Math.max(zoom - scaleAmount, 0.2);
-            }
-            // Zoom centralizado no mouse
-            const rect = graphArea.getBoundingClientRect();
-            const mx = (e.clientX - rect.left - translateX) / oldZoom;
-            const my = (e.clientY - rect.top - translateY) / oldZoom;
-            translateX -= (zoom - oldZoom) * mx;
-            translateY -= (zoom - oldZoom) * my;
-            applyTransform();
-        }, { passive: false });
-
-        // Pan com mouse drag no fundo
-        graphArea.addEventListener('mousedown', function (e) {
-            if (e.target !== graphArea) return;
-            isPanning = true;
-            panStart.x = e.clientX - translateX;
-            panStart.y = e.clientY - translateY;
-            graphArea.style.cursor = 'move';
-        });
-        window.addEventListener('mousemove', function (e) {
-            if (!isPanning) return;
-            translateX = e.clientX - panStart.x;
-            translateY = e.clientY - panStart.y;
-            applyTransform();
-        });
-        window.addEventListener('mouseup', function () {
-            isPanning = false;
-            graphArea.style.cursor = '';
-        });
-
-        // Ao iniciar, aplica transformações
-        applyTransform();
-
+        hideEditPanel();
         renderGraph();
+      }
+    };
 
-        photoInput.addEventListener('change', function () {
-            const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                if (selectedNode) {
-                    selectedNode.photo = e.target.result;
-                    if (!selectedNode.photoSize) selectedNode.photoSize = 80;
-                    if (!selectedNode.nodeSize) selectedNode.nodeSize = 140;
-                    photoPreview.src = e.target.result;
-                    photoPreview.style.display = 'block';
-                    photoSizeGroup.style.display = 'block';
-                    photoSizeRange.value = selectedNode.photoSize;
-                    nodeSizeGroup.style.display = 'block';
-                    nodeSizeInput.value = selectedNode.nodeSize;
-                    renderGraph();
-                }
-            };
-            reader.readAsDataURL(file);
-        });
+    function getNextId() {
+      let id = 1;
+      while (graphData.nodes.some(n => n.id === id)) id++;
+      return id;
+    }
 
-        photoSizeRange.addEventListener('input', function () {
-            if (selectedNode && selectedNode.photo) {
-                selectedNode.photoSize = parseInt(this.value);
-                renderGraph();
+    function createNodeElement(node) {
+      const nodeEl = document.createElement('div');
+      nodeEl.classList.add('node');
+      nodeEl.style.left = node.x + 'px';
+      nodeEl.style.top = node.y + 'px';
+      nodeEl.dataset.id = node.id;
+
+      // Use nodeWidth/nodeHeight se definidos, senão nodeSize
+      const width = node.nodeWidth || node.nodeSize || 140;
+      const height = node.nodeHeight || node.nodeSize || 140;
+      nodeEl.style.width = width + 'px';
+      nodeEl.style.height = height + 'px';
+
+      if (node.photo) {
+        nodeEl.innerHTML = '';
+
+        // Tamanho base do nó
+        const baseSize = node.nodeSize || 140;
+        nodeEl.style.width = baseSize + 'px';
+        nodeEl.style.height = baseSize + 'px';
+        nodeEl.style.border = '2px solid #444';
+        nodeEl.style.background = 'none';
+        nodeEl.style.backgroundColor = 'transparent';
+        nodeEl.style.overflow = 'hidden';
+        nodeEl.style.display = 'flex';
+        nodeEl.style.flexDirection = 'column';
+        nodeEl.style.alignItems = 'center';
+        nodeEl.style.justifyContent = 'flex-start';
+        nodeEl.style.borderRadius = '16px';
+        nodeEl.style.padding = '0';
+
+        // TAG (ID)
+        const numberTag = document.createElement('label');
+        numberTag.classList.add('number-tag');
+        numberTag.textContent = node.id;
+        // Atualiza CSS conforme painel lateral
+        numberTag.style.position = 'absolute';
+        numberTag.style.left = (node.tagX || 0) + 'px';
+        numberTag.style.top = (node.tagY || 0) + 'px';
+        numberTag.style.width = (node.tagWidth || 36) + 'px';
+        numberTag.style.height = (node.tagHeight || 36) + 'px';
+        // Remove alinhamento central padrão do CSS global
+        numberTag.style.transform = 'none';
+        numberTag.style.margin = '0';
+        numberTag.style.lineHeight = numberTag.style.height;
+        numberTag.style.textAlign = 'center';
+        nodeEl.appendChild(numberTag);
+
+        // TÍTULO
+        const titleEl = document.createElement('div');
+        titleEl.className = 'title';
+        titleEl.textContent = node.title;
+        // Atualiza CSS conforme painel lateral
+        titleEl.style.position = 'absolute';
+        titleEl.style.left = (node.titleX || 0) + 'px';
+        titleEl.style.top = (node.titleY || 0) + 'px';
+        titleEl.style.width = (node.titleWidth || 120) + 'px';
+        titleEl.style.height = (node.titleHeight || 24) + 'px';
+        titleEl.style.margin = '0';
+        titleEl.style.wordWrap = 'break-word';
+        titleEl.style.fontWeight = 'bold';
+        titleEl.style.fontSize = '1.1rem';
+        nodeEl.appendChild(titleEl);
+
+        // TEXTO
+        const summary = document.createElement('div');
+        summary.className = 'summary';
+        summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
+        // Atualiza CSS conforme painel lateral
+        summary.style.position = 'absolute';
+        summary.style.left = (node.textX || 0) + 'px';
+        summary.style.top = (node.textY || 0) + 'px';
+        summary.style.width = (node.textWidth || 120) + 'px';
+        summary.style.height = (node.textHeight || 60) + 'px';
+        summary.style.margin = '0';
+        summary.style.fontSize = '0.9rem';
+        summary.style.color = '#444';
+        summary.style.overflow = 'hidden';
+        summary.style.textOverflow = 'ellipsis';
+        summary.style.display = '-webkit-box';
+        summary.style.webkitLineClamp = '4';
+        summary.style.webkitBoxOrient = 'vertical';
+        nodeEl.appendChild(summary);
+
+        // Imagem ocupa o restante do nó
+        const img = document.createElement('img');
+        img.src = node.photo;
+        img.alt = 'Foto do nó';
+        img.style.objectFit = 'cover';
+        img.style.width = (node.photoSize || 80) + '%';
+        img.style.height = (node.photoSize || 80) + '%';
+        img.style.margin = 'auto';
+        img.style.display = 'block';
+        img.style.flex = '1 1 auto';
+        img.style.borderRadius = '8px';
+
+        // Ajusta proporção do nó conforme a imagem
+        img.onload = function () {
+          const aspect = img.naturalWidth / img.naturalHeight;
+          let width = baseSize, height = baseSize;
+          if (aspect > 1) {
+            width = baseSize;
+            height = Math.round(baseSize / aspect);
+          } else {
+            height = baseSize;
+            width = Math.round(baseSize * aspect);
+          }
+          nodeEl.style.width = width + 'px';
+          nodeEl.style.height = height + (node.hideContent ? 0 : 60) + 'px';
+        };
+        if (img.complete && img.naturalWidth) img.onload();
+
+        nodeEl.appendChild(img);
+      } else {
+        nodeEl.style.backgroundColor = node.color;
+        nodeEl.style.backgroundImage = '';
+        nodeEl.style.border = '';
+        nodeEl.style.borderRadius = '50%';
+        nodeEl.style.overflow = 'visible';
+        nodeEl.style.display = 'flex';
+
+        // TAG (ID)
+        const numberTag = document.createElement('label');
+        numberTag.classList.add('number-tag');
+        numberTag.textContent = node.id;
+        // Atualiza CSS conforme painel lateral
+        numberTag.style.position = 'absolute';
+        numberTag.style.left = (node.tagX || 0) + 'px';
+        numberTag.style.top = (node.tagY || 0) + 'px';
+        numberTag.style.width = (node.tagWidth || 36) + 'px';
+        numberTag.style.height = (node.tagHeight || 36) + 'px';
+        // Remove alinhamento central padrão do CSS global
+        numberTag.style.transform = 'none';
+        numberTag.style.margin = '0';
+        numberTag.style.lineHeight = numberTag.style.height;
+        numberTag.style.textAlign = 'center';
+        nodeEl.appendChild(numberTag);
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'title';
+        titleEl.textContent = node.title;
+        nodeEl.appendChild(titleEl);
+
+        // TEXTO
+        const summary = document.createElement('div');
+        summary.className = 'summary';
+        summary.textContent = node.content.length > 100 ? node.content.substring(0, 100) + '...' : node.content;
+        nodeEl.appendChild(summary);
+      }
+
+      nodeEl.addEventListener('click', e => {
+        e.stopPropagation();
+        selectNode(node.id);
+      });
+
+      let offsetX, offsetY, dragging = false;
+      nodeEl.addEventListener('mousedown', e => {
+        dragging = true;
+        offsetX = e.clientX - nodeEl.offsetLeft;
+        offsetY = e.clientY - nodeEl.offsetTop;
+        nodeEl.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+      window.addEventListener('mouseup', () => {
+        dragging = false;
+        nodeEl.style.cursor = 'grab';
+      });
+      window.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+        newX = Math.max(0, Math.min(graphArea.clientWidth - nodeEl.clientWidth, newX));
+        newY = Math.max(0, Math.min(graphArea.clientHeight - nodeEl.clientHeight, newY));
+        nodeEl.style.left = newX + 'px';
+        nodeEl.style.top = newY + 'px';
+        node.x = newX;
+        node.y = newY;
+        drawConnections();
+      });
+
+      return nodeEl;
+    }
+
+    function applyTransform() {
+      // Aplica zoom e pan em tudo, inclusive nas linhas
+      graphArea.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+      svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+      drawConnections();
+    }
+
+    function getOffsetX() {
+      if (editPanel.style.display === 'none') return 0;
+      return (editPanel.offsetWidth) - (editPanel.offsetWidth * zoom); // largura do painel
+    }
+
+
+    function drawConnections() {
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+      const offsetX = getOffsetX();
+
+      graphData.nodes.forEach(n => {
+        const fromNode = n;
+        const fromX = fromNode.x + (fromNode.nodeSize || 140) / 2;
+        const fromY = fromNode.y + (fromNode.nodeSize || 140) / 2;
+
+        n.connections.forEach(conn => {
+          const toNode = graphData.nodes.find(nd => nd.id === conn.targetId);
+          if (!toNode) return;
+
+          const toX = toNode.x + (toNode.nodeSize || 140) / 2;
+          const toY = toNode.y + (toNode.nodeSize || 140) / 2;
+
+          // Aplique o offsetX nas posições X
+          const adjFromX = fromX - offsetX;
+          const adjToX = toX - offsetX;
+
+          // Calcula direção
+          const dx = adjToX - adjFromX;
+          const dy = toY - fromY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Calcula ponto na borda do nó de destino
+          let edgeX = adjToX;
+          let edgeY = toY;
+          if (dist > 0) {
+            if (toNode.photo) {
+              // Retângulo (ajuste para borda real do retângulo)
+              const w = toNode.nodeSize || 140;
+              const h = toNode.nodeSize || 140;
+              const tx = -dx / dist;
+              const ty = -dy / dist;
+              const rectHalfW = w / 2;
+              const rectHalfH = h / 2;
+
+              // Calcula interseção com a borda do retângulo
+              let scaleX = rectHalfW / Math.abs(tx || 1e-6);
+              let scaleY = rectHalfH / Math.abs(ty || 1e-6);
+              let scale = Math.min(scaleX, scaleY);
+
+              edgeX = adjToX + tx * scale;
+              edgeY = toY + ty * scale;
+            } else {
+              // Círculo
+              const r = (toNode.nodeSize || 140) / 2;
+              edgeX = adjToX + (-dx / dist) * r;
+              edgeY = toY + (-dy / dist) * r;
             }
+          }
+
+          // Linha do centro ao centro, mas desenhada abaixo dos nós (z-index via ordem de append)
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", adjFromX);
+          line.setAttribute("y1", fromY);
+          line.setAttribute("x2", adjToX);
+          line.setAttribute("y2", toY);
+          line.setAttribute("stroke", conn.color || "#444");
+          line.setAttribute("stroke-width", "3");
+          line.setAttribute("stroke-linecap", "round");
+          svg.appendChild(line);
+
+          // Seta até a borda do nó de destino
+          // Usa tamanho e cor customizados se definidos no nó origem
+          const arrowSize = n.arrowSize || 10;
+          const arrowColor = n.arrowColor || '#444444';
+
+          // Cria marker customizado para cada cor/tamanho se necessário
+          const markerId = `arrow-${arrowSize}-${arrowColor.replace('#', '')}`;
+          if (!svg.querySelector(`#${markerId}`)) {
+            const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS("http://www.w3.org/2000/svg", "defs"), svg.firstChild);
+            const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+            marker.setAttribute("id", markerId);
+            marker.setAttribute("markerWidth", arrowSize);
+            marker.setAttribute("markerHeight", arrowSize);
+            marker.setAttribute("refX", arrowSize * 0.8);
+            marker.setAttribute("refY", arrowSize / 2);
+            marker.setAttribute("orient", "auto");
+            marker.setAttribute("markerUnits", "strokeWidth");
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", `M0,0 L${arrowSize},${arrowSize / 2} L0,${arrowSize} z`);
+            path.setAttribute("fill", arrowColor);
+            marker.appendChild(path);
+            defs.appendChild(marker);
+          }
+
+          const arrowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          arrowLine.setAttribute("x1", adjFromX);
+          arrowLine.setAttribute("y1", fromY);
+          arrowLine.setAttribute("x2", edgeX);
+          arrowLine.setAttribute("y2", edgeY);
+          arrowLine.setAttribute("stroke", "none");
+          arrowLine.setAttribute("marker-end", `url(#${markerId})`);
+          svg.appendChild(arrowLine);
+
+          // Label
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", (adjFromX + adjToX) / 2);
+          text.setAttribute("y", (fromY + toY) / 2 - 10);
+          text.setAttribute("fill", conn.color || "#444");
+          text.setAttribute("font-size", "14");
+          text.setAttribute("font-family", "Arial, sans-serif");
+          text.setAttribute("text-anchor", "middle");
+          text.textContent = conn.label || "";
+          svg.appendChild(text);
         });
+      });
+    }
 
-        nodeSizeInput.addEventListener('input', function () {
-            if (selectedNode && selectedNode.photo) {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 40) val = 40;
-                if (val > 400) val = 400;
-                selectedNode.nodeSize = val;
-                this.value = val;
-                renderGraph();
-            }
-        });
 
-        // Toggle para grupos de geometria
-        document.querySelectorAll('.toggle-header').forEach(header => {
-            header.addEventListener('click', function () {
-                const group = this.parentElement;
-                group.classList.toggle('open');
-                // Sempre que abrir, atualiza os valores dos campos com os valores atuais do nó selecionado
-                if (group.classList.contains('open') && selectedNode) {
-                    if (group.id === 'toggle-node-geometry') {
-                        nodeXInput.value = selectedNode.x || 0;
-                        nodeYInput.value = selectedNode.y || 0;
-                        nodeWidthInput.value = selectedNode.nodeWidth || selectedNode.nodeSize || 140;
-                        nodeHeightInput.value = selectedNode.nodeHeight || selectedNode.nodeSize || 140;
-                    }
-                    if (group.id === 'toggle-element-geometry') {
-                        tagXInput.value = selectedNode.tagX || 0;
-                        tagYInput.value = selectedNode.tagY || 0;
-                        tagWidthInput.value = selectedNode.tagWidth || 36;
-                        tagHeightInput.value = selectedNode.tagHeight || 36;
 
-                        titleXInput.value = selectedNode.titleX || 0;
-                        titleYInput.value = selectedNode.titleY || 0;
-                        titleWidthInput.value = selectedNode.titleWidth || 120;
-                        titleHeightInput.value = selectedNode.titleHeight || 24;
 
-                        textXInput.value = selectedNode.textX || 0;
-                        textYInput.value = selectedNode.textY || 0;
-                        textWidthInput.value = selectedNode.textWidth || 120;
-                        textHeightInput.value = selectedNode.textHeight || 60;
-                    }
-                }
-            });
-        });
 
-        // Manipulação em tempo real dos elementos do nó selecionado
-        function updateNodeElementProperty(prop, value) {
-            if (!selectedNode) return;
-            selectedNode[prop] = value;
-            renderGraph();
+    function renderGraph() {
+      // Primeiro desenha as linhas (SVG)
+      drawConnections();
+      // Depois desenha os nós (eles ficam acima das linhas)
+      graphArea.innerHTML = '';
+      graphData.nodes.forEach(node => {
+        const nodeEl = createNodeElement(node);
+        if (selectedNode && node.id === selectedNode.id) {
+          nodeEl.classList.add('selected');
         }
+        graphArea.appendChild(nodeEl);
+      });
+    }
 
-        // Node geometry
-        nodeXInput.addEventListener('input', function () {
-            updateNodeElementProperty('x', parseInt(this.value) || 0);
-        });
-        nodeYInput.addEventListener('input', function () {
-            updateNodeElementProperty('y', parseInt(this.value) || 0);
-        });
-        nodeWidthInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 40) val = 40;
-            if (val > 800) val = 800;
-            this.value = val;
-            updateNodeElementProperty('nodeWidth', val);
-        });
-        nodeHeightInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 40) val = 40;
-            if (val > 800) val = 800;
-            this.value = val;
-            updateNodeElementProperty('nodeHeight', val);
-        });
+    function selectNode(id) {
+      selectedNode = graphData.nodes.find(n => n.id === id);
+      if (!selectedNode) {
+        hideEditPanel();
+        return;
+      }
+      showEditPanel(selectedNode);
+      renderGraph();
+    }
 
-        // Tag geometry
-        tagXInput.addEventListener('input', function () {
-            updateNodeElementProperty('tagX', parseInt(this.value) || 0);
-        });
-        tagYInput.addEventListener('input', function () {
-            updateNodeElementProperty('tagY', parseInt(this.value) || 0);
-        });
-        tagWidthInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 10) val = 10;
-            if (val > 200) val = 200;
-            this.value = val;
-            updateNodeElementProperty('tagWidth', val);
-        });
-        tagHeightInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 10) val = 10;
-            if (val > 200) val = 200;
-            this.value = val;
-            updateNodeElementProperty('tagHeight', val);
-        });
+    // Preencher valores ao abrir o painel
+    function showEditPanel(node) {
+      editPanel.style.display = 'block';
+      document.getElementById('edit-id').value = node.id;
+      document.getElementById('edit-title').value = node.title;
+      document.getElementById('edit-content').value = node.content;
+      document.getElementById('edit-color').value = node.color || "#a2d5f2";
 
-        // Title geometry
-        titleXInput.addEventListener('input', function () {
-            updateNodeElementProperty('titleX', parseInt(this.value) || 0);
-        });
-        titleYInput.addEventListener('input', function () {
-            updateNodeElementProperty('titleY', parseInt(this.value) || 0);
-        });
-        titleWidthInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 10) val = 10;
-            if (val > 300) val = 300;
-            this.value = val;
-            updateNodeElementProperty('titleWidth', val);
-        });
-        titleHeightInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 10) val = 10;
-            if (val > 100) val = 100;
-            this.value = val;
-            updateNodeElementProperty('titleHeight', val);
-        });
+      connectionsList.innerHTML = '';
 
-        // Text geometry
-        textXInput.addEventListener('input', function () {
-            updateNodeElementProperty('textX', parseInt(this.value) || 0);
+      node.connections.forEach((conn, idx) => {
+        const div = document.createElement('div');
+
+        const targetInput = document.createElement('input');
+        targetInput.type = 'number';
+        targetInput.min = 1;
+        targetInput.value = conn.targetId;
+        targetInput.title = 'ID do Nó Alvo';
+        targetInput.addEventListener('change', () => {
+          const val = parseInt(targetInput.value);
+          if (isNaN(val) || val < 1 || val === node.id || !graphData.nodes.some(n => n.id === val)) {
+            alert('ID alvo inválido');
+            targetInput.value = conn.targetId;
+            return;
+          }
+          conn.targetId = val;
+          renderGraph();
         });
-        textYInput.addEventListener('input', function () {
-            updateNodeElementProperty('textY', parseInt(this.value) || 0);
+        div.appendChild(targetInput);
+
+        const labelInput = document.createElement('input');
+        labelInput.type = 'text';
+        labelInput.placeholder = 'Texto da conexão';
+        labelInput.value = conn.label || '';
+        labelInput.addEventListener('input', () => {
+          conn.label = labelInput.value;
+          renderGraph();
         });
-        textWidthInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 10) val = 10;
-            if (val > 300) val = 300;
-            this.value = val;
-            updateNodeElementProperty('textWidth', val);
+        div.appendChild(labelInput);
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = conn.color || '#444';
+        colorInput.title = 'Cor da conexão';
+        colorInput.addEventListener('change', () => {
+          conn.color = colorInput.value;
+          renderGraph();
         });
-        textHeightInput.addEventListener('input', function () {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 10) val = 10;
-            if (val > 200) val = 200;
-            this.value = val;
-            updateNodeElementProperty('textHeight', val);
+        div.appendChild(colorInput);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'X';
+        removeBtn.classList.add('remove-conn-btn');
+        removeBtn.title = 'Remover conexão';
+        removeBtn.addEventListener('click', () => {
+          node.connections.splice(idx, 1);
+          showEditPanel(node);
+          renderGraph();
         });
-    </script>
+        div.appendChild(removeBtn);
+
+        connectionsList.appendChild(div);
+      });
+
+      if (node.photo) {
+        photoPreview.src = node.photo;
+        photoPreview.style.display = 'block';
+        photoSizeGroup.style.display = 'block';
+        photoSizeRange.value = node.photoSize || 80;
+        nodeSizeGroup.style.display = 'block';
+        nodeSizeInput.value = node.nodeSize || 140;
+        photoHideGroup.style.display = 'block';
+        photoHideCheckbox.checked = !!node.hideContent;
+      } else {
+        photoPreview.src = '';
+        photoPreview.style.display = 'none';
+        photoSizeGroup.style.display = 'none';
+        nodeSizeGroup.style.display = 'none';
+        photoHideGroup.style.display = 'none';
+      }
+      photoInput.value = '';
+
+      // Exibe controles de seta se houver conexões
+      if (node.connections && node.connections.length > 0) {
+        arrowSettingsGroup.style.display = 'block';
+        // Usa valores do nó ou padrão
+        arrowSizeInput.value = node.arrowSize || 10;
+        arrowColorInput.value = node.arrowColor || '#444444';
+      } else {
+        arrowSettingsGroup.style.display = 'none';
+      }
+
+      // Preenche campos de geometria
+      nodeGeometryGroup.style.display = 'block';
+      nodeXInput.value = node.x || 0;
+      nodeYInput.value = node.y || 0;
+      nodeWidthInput.value = node.nodeWidth || node.nodeSize || 140;
+      nodeHeightInput.value = node.nodeHeight || node.nodeSize || 140;
+
+      // Preenche campos de geometria dos elementos internos
+      elementGeometryGroup.style.display = 'block';
+      tagXInput.value = node.tagX || 0;
+      tagYInput.value = node.tagY || 0;
+      tagWidthInput.value = node.tagWidth || 36;
+      tagHeightInput.value = node.tagHeight || 36;
+
+      titleXInput.value = node.titleX || 0;
+      titleYInput.value = node.titleY || 0;
+      titleWidthInput.value = node.titleWidth || 120;
+      titleHeightInput.value = node.titleHeight || 24;
+
+      textXInput.value = node.textX || 0;
+      textYInput.value = node.textY || 0;
+      textWidthInput.value = node.textWidth || 120;
+      textHeightInput.value = node.textHeight || 60;
+
+      setTimeout(drawConnections, 0);
+    }
+
+    photoHideCheckbox.addEventListener('change', function () {
+      if (selectedNode && selectedNode.photo) {
+        selectedNode.hideContent = this.checked;
+        renderGraph();
+      }
+    });
+
+    // Atualiza tamanho da seta
+    arrowSizeInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.arrowSize = parseInt(this.value);
+        renderGraph();
+      }
+    });
+
+    // Atualiza cor da seta
+    arrowColorInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.arrowColor = this.value;
+        renderGraph();
+      }
+    });
+
+    // Atualiza X
+    nodeXInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.x = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    // Atualiza Y
+    nodeYInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.y = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    // Atualiza largura
+    nodeWidthInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 40) val = 40;
+        if (val > 800) val = 800;
+        selectedNode.nodeWidth = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+    // Atualiza altura
+    nodeHeightInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 40) val = 40;
+        if (val > 800) val = 800;
+        selectedNode.nodeHeight = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+
+    // Atualiza geometria dos elementos internos
+    tagXInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.tagX = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    tagYInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.tagY = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    tagWidthInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 10) val = 10;
+        if (val > 200) val = 200;
+        selectedNode.tagWidth = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+    tagHeightInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 10) val = 10;
+        if (val > 200) val = 200;
+        selectedNode.tagHeight = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+    titleXInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.titleX = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    titleYInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.titleY = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    titleWidthInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 10) val = 10;
+        if (val > 300) val = 300;
+        selectedNode.titleWidth = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+    titleHeightInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 10) val = 10;
+        if (val > 100) val = 100;
+        selectedNode.titleHeight = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+    textXInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.textX = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    textYInput.addEventListener('input', function () {
+      if (selectedNode) {
+        selectedNode.textY = parseInt(this.value) || 0;
+        renderGraph();
+      }
+    });
+    textWidthInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 10) val = 10;
+        if (val > 300) val = 300;
+        selectedNode.textWidth = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+    textHeightInput.addEventListener('input', function () {
+      if (selectedNode) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 10) val = 10;
+        if (val > 200) val = 200;
+        selectedNode.textHeight = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+
+    function hideEditPanel() {
+      selectedNode = null;
+      editPanel.style.display = 'none';
+      renderGraph();
+      setTimeout(drawConnections, 0);
+    }
+
+    editForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!selectedNode) return;
+
+      const newId = parseInt(document.getElementById('edit-id').value);
+      if (isNaN(newId) || newId < 1) {
+        alert("ID deve ser um número válido e maior que zero");
+        return;
+      }
+      if (graphData.nodes.some(n => n.id === newId && n !== selectedNode)) {
+        alert("ID deve ser único");
+        return;
+      }
+
+      for (const conn of selectedNode.connections) {
+        if (typeof conn.targetId !== 'number' || conn.targetId < 1 || !graphData.nodes.some(n => n.id === conn.targetId)) {
+          alert('Alguma conexão possui ID alvo inválido.');
+          return;
+        }
+      }
+
+      const oldId = selectedNode.id;
+      selectedNode.id = newId;
+      selectedNode.title = document.getElementById('edit-title').value.trim();
+      selectedNode.content = document.getElementById('edit-content').value.trim();
+      selectedNode.color = document.getElementById('edit-color').value;
+
+      if (oldId !== newId) {
+        graphData.nodes.forEach(n => {
+          n.connections.forEach(c => {
+            if (c.targetId === oldId) c.targetId = newId;
+          });
+        });
+      }
+
+      hideEditPanel();
+    });
+
+    document.getElementById('cancel-edit').addEventListener('click', e => {
+      e.preventDefault();
+      hideEditPanel();
+    });
+
+    graphArea.addEventListener('click', () => {
+      hideEditPanel();
+    });
+
+    document.getElementById('save-btn').addEventListener('click', () => {
+      const dataStr = JSON.stringify(graphData, null, 2);
+      download('graph.json', dataStr);
+    });
+
+    document.getElementById('save-as-btn').addEventListener('click', () => {
+      let filename = prompt('Digite o nome do arquivo (sem extensão)', 'graph');
+      if (!filename) return;
+      if (!filename.toLowerCase().endsWith('.json')) filename += '.json';
+      const dataStr = JSON.stringify(graphData, null, 2);
+      download(filename, dataStr);
+    });
+
+    // download com zoom e pan
+    function download(filename, text) {
+      const data = {
+        ...JSON.parse(text),
+        __zoom: zoom,
+        __translateX: translateX,
+        __translateY: translateY
+      };
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2)));
+      element.setAttribute('download', filename);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+
+    document.getElementById('load-btn').addEventListener('click', () => {
+      document.getElementById('load-input').click();
+    });
+
+    document.getElementById('load-input').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const loadedData = JSON.parse(e.target.result);
+          if (loadedData.nodes && Array.isArray(loadedData.nodes)) {
+            graphData = loadedData;
+            zoom = loadedData.__zoom || 1;
+            translateX = loadedData.__translateX || 0;
+            translateY = loadedData.__translateY || 0;
+            applyTransform();
+            hideEditPanel();
+            renderGraph();
+          } else {
+            alert('Arquivo JSON inválido.');
+          }
+        } catch {
+          alert('Erro ao carregar JSON.');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    // Zoom e pan
+    let zoom = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+
+    // Aplica transformações de zoom e pan
+    function applyTransform() {
+      // Aplica zoom e pan em tudo, inclusive nas linhas
+      graphArea.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+      svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoom})`;
+      drawConnections();
+    }
+
+    // Mouse wheel para zoom
+    graphArea.addEventListener('wheel', function (e) {
+      if (e.ctrlKey) return; // deixa zoom do navegador funcionar normalmente
+      e.preventDefault();
+      const scaleAmount = 0.1;
+      const oldZoom = zoom;
+      if (e.deltaY < 0) {
+        zoom = Math.min(zoom + scaleAmount, 3);
+      } else {
+        zoom = Math.max(zoom - scaleAmount, 0.2);
+      }
+      // Zoom centralizado no mouse
+      const rect = graphArea.getBoundingClientRect();
+      const mx = (e.clientX - rect.left - translateX) / oldZoom;
+      const my = (e.clientY - rect.top - translateY) / oldZoom;
+      translateX -= (zoom - oldZoom) * mx;
+      translateY -= (zoom - oldZoom) * my;
+      applyTransform();
+    }, { passive: false });
+
+    // Pan com mouse drag no fundo
+    graphArea.addEventListener('mousedown', function (e) {
+      if (e.target !== graphArea) return;
+      isPanning = true;
+      panStart.x = e.clientX - translateX;
+      panStart.y = e.clientY - translateY;
+      graphArea.style.cursor = 'move';
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!isPanning) return;
+      translateX = e.clientX - panStart.x;
+      translateY = e.clientY - panStart.y;
+      applyTransform();
+    });
+    window.addEventListener('mouseup', function () {
+      isPanning = false;
+      graphArea.style.cursor = '';
+    });
+
+    // Ao iniciar, aplica transformações
+    applyTransform();
+
+    renderGraph();
+
+    photoInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        if (selectedNode) {
+          selectedNode.photo = e.target.result;
+          if (!selectedNode.photoSize) selectedNode.photoSize = 80;
+          if (!selectedNode.nodeSize) selectedNode.nodeSize = 140;
+          photoPreview.src = e.target.result;
+          photoPreview.style.display = 'block';
+          photoSizeGroup.style.display = 'block';
+          photoSizeRange.value = selectedNode.photoSize;
+          nodeSizeGroup.style.display = 'block';
+          nodeSizeInput.value = selectedNode.nodeSize;
+          renderGraph();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    photoSizeRange.addEventListener('input', function () {
+      if (selectedNode && selectedNode.photo) {
+        selectedNode.photoSize = parseInt(this.value);
+        renderGraph();
+      }
+    });
+
+    nodeSizeInput.addEventListener('input', function () {
+      if (selectedNode && selectedNode.photo) {
+        let val = parseInt(this.value);
+        if (isNaN(val) || val < 40) val = 40;
+        if (val > 400) val = 400;
+        selectedNode.nodeSize = val;
+        this.value = val;
+        renderGraph();
+      }
+    });
+
+    // Toggle para grupos de geometria
+    document.querySelectorAll('.toggle-header').forEach(header => {
+      header.addEventListener('click', function () {
+        const group = this.parentElement;
+        group.classList.toggle('open');
+        // Sempre que abrir, atualiza os valores dos campos com os valores atuais do nó selecionado
+        if (group.classList.contains('open') && selectedNode) {
+          if (group.id === 'toggle-node-geometry') {
+            nodeXInput.value = selectedNode.x || 0;
+            nodeYInput.value = selectedNode.y || 0;
+            nodeWidthInput.value = selectedNode.nodeWidth || selectedNode.nodeSize || 140;
+            nodeHeightInput.value = selectedNode.nodeHeight || selectedNode.nodeSize || 140;
+          }
+          if (group.id === 'toggle-element-geometry') {
+            tagXInput.value = selectedNode.tagX || 0;
+            tagYInput.value = selectedNode.tagY || 0;
+            tagWidthInput.value = selectedNode.tagWidth || 36;
+            tagHeightInput.value = selectedNode.tagHeight || 36;
+
+            titleXInput.value = selectedNode.titleX || 0;
+            titleYInput.value = selectedNode.titleY || 0;
+            titleWidthInput.value = selectedNode.titleWidth || 120;
+            titleHeightInput.value = selectedNode.titleHeight || 24;
+
+            textXInput.value = selectedNode.textX || 0;
+            textYInput.value = selectedNode.textY || 0;
+            textWidthInput.value = selectedNode.textWidth || 120;
+            textHeightInput.value = selectedNode.textHeight || 60;
+          }
+        }
+      });
+    });
+
+    // Manipulação em tempo real dos elementos do nó selecionado
+    function updateNodeElementProperty(prop, value) {
+      if (!selectedNode) return;
+      selectedNode[prop] = value;
+      renderGraph();
+    }
+
+    // Node geometry
+    nodeXInput.addEventListener('input', function () {
+      updateNodeElementProperty('x', parseInt(this.value) || 0);
+    });
+    nodeYInput.addEventListener('input', function () {
+      updateNodeElementProperty('y', parseInt(this.value) || 0);
+    });
+    nodeWidthInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 40) val = 40;
+      if (val > 800) val = 800;
+      this.value = val;
+      updateNodeElementProperty('nodeWidth', val);
+    });
+    nodeHeightInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 40) val = 40;
+      if (val > 800) val = 800;
+      this.value = val;
+      updateNodeElementProperty('nodeHeight', val);
+    });
+
+    // Tag geometry
+    tagXInput.addEventListener('input', function () {
+      updateNodeElementProperty('tagX', parseInt(this.value) || 0);
+    });
+    tagYInput.addEventListener('input', function () {
+      updateNodeElementProperty('tagY', parseInt(this.value) || 0);
+    });
+    tagWidthInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 10) val = 10;
+      if (val > 200) val = 200;
+      this.value = val;
+      updateNodeElementProperty('tagWidth', val);
+    });
+    tagHeightInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 10) val = 10;
+      if (val > 200) val = 200;
+      this.value = val;
+      updateNodeElementProperty('tagHeight', val);
+    });
+
+    // Title geometry
+    titleXInput.addEventListener('input', function () {
+      updateNodeElementProperty('titleX', parseInt(this.value) || 0);
+    });
+    titleYInput.addEventListener('input', function () {
+      updateNodeElementProperty('titleY', parseInt(this.value) || 0);
+    });
+    titleWidthInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 10) val = 10;
+      if (val > 300) val = 300;
+      this.value = val;
+      updateNodeElementProperty('titleWidth', val);
+    });
+    titleHeightInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 10) val = 10;
+      if (val > 100) val = 100;
+      this.value = val;
+      updateNodeElementProperty('titleHeight', val);
+    });
+
+    // Text geometry
+    textXInput.addEventListener('input', function () {
+      updateNodeElementProperty('textX', parseInt(this.value) || 0);
+    });
+    textYInput.addEventListener('input', function () {
+      updateNodeElementProperty('textY', parseInt(this.value) || 0);
+    });
+    textWidthInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 10) val = 10;
+      if (val > 300) val = 300;
+      this.value = val;
+      updateNodeElementProperty('textWidth', val);
+    });
+    textHeightInput.addEventListener('input', function () {
+      let val = parseInt(this.value);
+      if (isNaN(val) || val < 10) val = 10;
+      if (val > 200) val = 200;
+      this.value = val;
+      updateNodeElementProperty('textHeight', val);
+    });
+  </script>
 
 </body>
 
